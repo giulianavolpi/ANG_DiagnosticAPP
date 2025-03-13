@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="content">
+    <div class="page-header-title">
+        <h4 class="page-title">Pacientes Menores de Edad</h4>
+    </div>
+
+    <!-- Filter Form -->
+    <form method="get" action="{% url 'pacientes_list' %}">
+        <div class="form-group">
+            <label for="doctor_id">Id Doctor:</label>
+            <input type="number" name="doctor_id" id="doctor_id" class="form-control" placeholder="Ingrese el Id del doctor" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Buscar</button>
+    </form>
+
+    <br>
+
+    <div class="page-content-wrapper">
+        <div class="container">
+            <!-- Content page -->
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    {% if pacientes_list %}
+                    <table class="table table-hover">
+                        <thead>
+                            <tr style="color:#000000">
+                                <th>Id</th>
+                                <th>Nombres</th>
+                                <th>Apellidos</th>
+                                <th>Edad</th>
+                                <th>Historia Clínica</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for paciente in pacientes_list %}
+                            <tr>
+                                <td>{{ paciente.id }}</td>
+                                <td>{{ paciente.nombres }}</td>
+                                <td>{{ paciente.apellidos }}</td>
+                                <td>{{ paciente.edad }}</td>
+                                <td>{{ paciente.historia_clinica }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                        <p>No hay pacientes menores de edad asociados al doctor.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
