@@ -16,6 +16,6 @@ def check_doctor_existence(doctor_id):
     en caso contrario (con una probabilidad del 20%).
     """
 
-    time.sleep(random.uniform(0.015, 0.045))
+    time.sleep(random.uniform(0.015, 0.03))
 
     return random.random() < 0.8

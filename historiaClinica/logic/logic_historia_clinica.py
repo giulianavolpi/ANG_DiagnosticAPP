@@ -1,21 +1,32 @@
 import time
 import random
 
-def extract_medical_history(patient_id):
+def extract_medical_history(patients):
     """
-    Simula la validación de la existencia del paciente en el sistema de historia clínica del hospital
+    Simula la validación de la existencia de los pacientes en el sistema de historias clínicas del hospital
     generando un delay aleatorio entre 15 y 30 ms.
 
     Args:
-        patient_id (int): El id del paciente.
+        patients (QuerySet): Un QuerySet de pacientes.
 
     Returns:
-        str: Historia clínica del paciente si existe (con una probabilidad del 80%),
-        None en caso contrario (con una probabilidad del 20%).
+        list: Una lista de diccionarios con la información de los pacientes que existen en el sistema de historias
+        clínicas del hospital.
     """
     time.sleep(random.uniform(0.015, 0.03))
 
-    if random.random() < 0.8:
-        return f"Historia Clinica del paciente {patient_id}"
-    else:
-        return None
+    # Por cada paciente, si existe en el sistema del hospital, se guarda su información
+    patients_data = []
+    for patient in patients:
+        # Simula la existencia del paciente en el sistema de historias clínicas del hospital con una probabilidad del 80%
+        if random.random() < 0.8:
+            paciente_info = {
+                'id': patient.id,
+                'nombres': patient.nombres,
+                'apellidos': patient.apellidos,
+                'edad': patient.edad,
+                'historia_clinica': f"Historia Clinica del paciente {patient.id}"
+            }
+            patients_data.append(paciente_info)
+
+    return patients_data
