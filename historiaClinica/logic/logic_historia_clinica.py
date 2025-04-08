@@ -13,6 +13,7 @@ def extract_medical_history(patients):
         list: Una lista de diccionarios con la información de los pacientes que existen en el sistema de historias
         clínicas del hospital.
     """
+    # Simula el delay de 15 a 30 ms
     time.sleep(random.uniform(0.015, 0.03))
 
     # Por cada paciente, si existe en el sistema del hospital, se guarda su información
