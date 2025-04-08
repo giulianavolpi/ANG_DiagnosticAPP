@@ -9,9 +9,9 @@ from paciente.models import Paciente
 class Command(BaseCommand):
     help = (
         "Popula la base de datos con:\n"
-        " 1) 250 doctores y 350 pacientes iniciales (con 2–5 doctores cada uno, "
-        "asegurando ≥10 pacientes por doctor)\n"
-        " 2) 100 pacientes adicionales, cada uno asociado a la mitad de los doctores existentes"
+        " 1) 250 doctores y 250 pacientes iniciales (con 2–5 doctores cada uno)\n"
+        " 2) 100 pacientes adicionales, cada uno asociado a la mitad de los doctores existentes, i.e. "
+        "250 doctores y 350 pacientes en total.\n"
     )
 
     def handle(self, *args, **options):
@@ -27,10 +27,10 @@ class Command(BaseCommand):
         doctores = list(Medico.objects.all())
         self.stdout.write(self.style.SUCCESS(f"{len(doctores)} doctores creados."))
 
-        # 2. Crear 350 pacientes iniciales
-        self.stdout.write("Creando 350 pacientes iniciales...")
+        # 2. Crear 250 pacientes iniciales
+        self.stdout.write("Creando 250 pacientes iniciales...")
         pacientes = []
-        for _ in range(350):
+        for _ in range(250):
             p = Paciente(
                 nombres=fake.first_name(),
                 apellidos=fake.last_name(),
