@@ -1,18 +1,18 @@
 _format_version: "2.1"
 
 services:
-  - host: monitoring_upstream
-    name: monitoring_service
+  - host: diagnosticapp_upstream
+    name: diagnosticapp_service
     protocol: http
     routes:
 
-      - name: monitoring
+      - name: diagnosticapp
         paths:
           - /
         strip_path: false
 
 upstreams:
-  - name: monitoring_upstream
+  - name: diagnosticapp_upstream
     targets:
       - target: 10.128.0.53:8080
         weight: 100

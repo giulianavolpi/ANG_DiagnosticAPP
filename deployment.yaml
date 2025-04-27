@@ -56,7 +56,7 @@ resources:
     - IPProtocol: TCP
       ports:
       - 8001
-- name: cbd-monitoring-db
+- name: cbd-diagnosticapp-db
   type: compute.v1.firewall
   properties:
     network: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/global/networks/default
@@ -65,7 +65,7 @@ resources:
     sourceTags:
     - cbd-services-firewall
     targetTags:
-    - cbd-monitoring-db
+    - cbd-diagnosticapp-db
     allowed:
     - IPProtocol: TCP
       ports:
@@ -125,7 +125,7 @@ resources:
       networkIP: 10.128.0.52
     tags:
       items:
-      - cbd-monitoring-db
+      - cbd-diagnosticapp-db
     metadata:
       items:
       - key: startup-script
