@@ -1,0 +1,33 @@
+_format_version: "2.1"
+
+services:
+  - host: monitoring_upstream
+    name: monitoring_service
+    protocol: http
+    routes:
+
+      - name: monitoring
+        paths:
+          - /
+        strip_path: false
+
+upstreams:
+  - name: monitoring_upstream
+    targets:
+      - target: 10.128.0.53:8080
+        weight: 100
+      - target: 10.128.0.54:8080
+        weight: 100
+      - target: 10.128.0.55:8080
+        weight: 100
+    healthchecks:
+     threshold: 35
+     active:
+       http_path: /health/
+       timeout: 10
+       healthy:
+         successes: 4
+         interval: 10
+       unhealthy:
+         tcp_failures: 1
+         interval: 7
