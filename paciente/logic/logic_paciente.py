@@ -1,6 +1,8 @@
 from ..models import Paciente
 from hospital.logic.logic_hospital import check_doctor_existence
 from historiaClinica.logic.logic_historia_clinica import extract_medical_history
+#PARA LOS ERRORES SIMULADOS
+from diagnosticapp.utils.error_simulation import simulate_error_probability, get_error_stats # Ajusta la ruta de importación según donde pusiste el archivo
 
 def get_pacientes_menores_de_edad(doctor_id):
     """
@@ -30,6 +32,8 @@ def get_pacientes_menores_de_edad(doctor_id):
     # return pacientes_data
     return patients_data
 
+#PARA LO DE LOS ERRORES
+@simulate_error_probability(probability=0.1)
 def get_pacientes(doctor_id):
     """
     Obtener la lista de pacientes asignados a un doctor, realizando

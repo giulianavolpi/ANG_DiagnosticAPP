@@ -136,3 +136,15 @@ MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'static', 'media')
 STATICFILES_DIRS = (
     os.path.join(PROJECT_ROOT, 'static'),
 )
+
+#PARA LAS PRUEBAS DE ERROR
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'simulacion-errores-cache', # Nombre único para esta instancia de caché en memoria
+        'TIMEOUT': None, # Configura un timeout global si quieres que los contadores no expiren por tiempo, aunque el timeout=None en set ya lo hace
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000 # Opcional: limitar el número de entradas
+        }
+    }
+}
