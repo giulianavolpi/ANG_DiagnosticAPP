@@ -1,113 +1,84 @@
 {# paciente/templates/pacientes.html #}
 {% extends 'base.html' %}
+
 {% block title %}Pacientes{% if doctor_id_buscado %} del Doctor {{ doctor_id_buscado }}{% endif %}{% endblock %}
+
 {% block content %}
+
 <div class="content">
-  <div class="page-header-title">
-    <h4 class="page-title">Pacientes</h4>
-  </div>
-
-  {# --- Mostrar mensaje de error simulado en esta llamada --- #} {% if
-  error_simulado_en_esta_llamada %}
-  <div
-    style="
-      color: red;
-      border: 1px solid red;
-      padding: 10px;
-      margin-bottom: 20px;
-      background-color: #ffe6e6;
-    "
-  >
-    <strong>¡Error Simulado Detectado!</strong> No se pudieron cargar los datos
-    de los pacientes para este doctor.
-  </div>
-  {% endif %} {# --- Fin mensaje de error simulado --- #}
-
-  <form method="get" action="{% url 'pacientes_list' %}">
-    <div class="form-group">
-      <label for="doctor_id">Id Doctor:</label>
-      <input
-        type="number"
-        name="doctor_id"
-        id="doctor_id"
-        class="form-control"
-        placeholder="Ingrese el Id del doctor"
-        required
-        value="{{ doctor_id_buscado|default:'' }}"
-      />
-      {# Mantener el valor buscado #}
+    <div class="page-header-title">
+        <h4 class="page-title">Pacientes</h4>
     </div>
-    <button type="submit" class="btn btn-primary">Buscar</button>
-  </form>
 
-  <br />
-
-  <div class="page-content-wrapper">
-    <div class="container">
-      <div class="panel panel-default">
-        <div class="panel-body">
-          {# --- Mostrar tabla de pacientes SOLO si no hubo error simulado Y hay
-          pacientes --- #} {% if not error_simulado_en_esta_llamada and
-          pacientes_list %}
-          <table class="table table-hover">
-            <thead>
-              <tr style="color: #000000">
-                <th>Id</th>
-                <th>Nombres</th>
-                <th>Apellidos</th>
-                <th>Edad</th>
-                <th>Historia Clínica</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for paciente in pacientes_list %}
-              <tr>
-                <td>{{ paciente.id }}</td>
-                <td>{{ paciente.nombres }}</td>
-                <td>{{ paciente.apellidos }}</td>
-                <td>{{ paciente.edad }}</td>
-                <td>{{ paciente.historia_clinica }}</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-          {% elif not error_simulado_en_esta_llamada and not pacientes_list %}
-          {# Mensaje si NO hubo error simulado pero la lista está vacía (el
-          original "No hay pacientes") #}
-          <p>
-            No hay pacientes asociados al doctor o no se encontraron pacientes
-            en el sistema de historias clínicas.
-          </p>
-          {% endif %} {# Si error_simulado_en_esta_llamada es True, el mensaje
-          de error ya se mostró arriba #}
+    {# --- Mostrar mensaje de error simulado en esta llamada --- #}
+    {% if error_simulado_en_esta_llamada %}
+        <div style="color: red; border: 1px solid red; padding: 10px; margin-bottom: 20px; background-color: #ffe6e6;">
+            <strong>¡Error Simulado Detectado!</strong> No se pudieron cargar los datos de los pacientes para este doctor.
         </div>
-      </div>
-    </div>
-  </div>
+    {% endif %}
+    {# --- Fin mensaje de error simulado --- #}
 
-  {# --- Mostrar estadísticas de errores acumulados --- #}
-  <div style="margin-top: 30px; border-top: 1px solid #ccc; padding-top: 20px">
-    <h2>Estadísticas de Simulación de Errores</h2>
-    <p>
-      Total de llamadas a la función (acumulado):
-      <strong>{{ error_stats.total_calls }}</strong>
-    </p>
-    <p>
-      Errores simulados detectados (acumulado):
-      <strong>{{ error_stats.simulated_errors }}</strong>
-    </p>
-    {# La detección es el manejo del None en la vista. El porcentaje de errores
-    detectados siempre será el porcentaje de errores simulados. #}
-    <p>
-      Porcentaje de errores detectados:
-      <strong>{{ error_stats.error_percentage }}%</strong>
-    </p>
-    {# Opcional: Botón/Enlace para resetear las estadísticas si incluyes esa
-    funcionalidad #} {#
-    <p><a href="{% url 'reset_error_stats' %}">Reiniciar Estadísticas</a></p>
-    #}
-  </div>
-  {# --- Fin estadísticas --- #}
+    <form method="get" action="{% url 'pacientes_list' %}">
+        <div class="form-group">
+            <label for="doctor_id">Id Doctor:</label>
+            <input type="number" name="doctor_id" id="doctor_id" class="form-control" placeholder="Ingrese el Id del doctor" required value="{{ doctor_id_buscado|default:'' }}"> {# Mantener el valor buscado #}
+        </div>
+        <button type="submit" class="btn btn-primary">Buscar</button>
+    </form>
+
+    <br>
+
+    <div class="page-content-wrapper">
+        <div class="container">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    {# --- Mostrar tabla de pacientes SOLO si no hubo error simulado Y hay pacientes --- #}
+                    {% if not error_simulado_en_esta_llamada and pacientes_list %}
+                        <table class="table table-hover">
+                            <thead>
+                                <tr style="color:#000000">
+                                    <th>Id</th>
+                                    <th>Nombres</th>
+                                    <th>Apellidos</th>
+                                    <th>Edad</th>
+                                    <th>Historia Clínica</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for paciente in pacientes_list %}
+                                <tr>
+                                    <td>{{ paciente.id }}</td>
+                                    <td>{{ paciente.nombres }}</td>
+                                    <td>{{ paciente.apellidos }}</td>
+                                    <td>{{ paciente.edad }}</td>
+                                    <td>{{ paciente.historia_clinica }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% elif not error_simulado_en_esta_llamada and not pacientes_list %}
+                        {# Mensaje si NO hubo error simulado pero la lista está vacía (el original "No hay pacientes") #}
+                        <p>No hay pacientes asociados al doctor o no se encontraron pacientes en el sistema de historias clínicas.</p>
+                    {% endif %}
+                     {# Si error_simulado_en_esta_llamada es True, el mensaje de error ya se mostró arriba #}
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# --- Mostrar estadísticas de errores acumulados --- #}
+    <div style="margin-top: 30px; border-top: 1px solid #ccc; padding-top: 20px;">
+        <h2>Estadísticas de Simulación de Errores</h2>
+        <p>Total de llamadas a la función (acumulado): <strong>{{ error_stats.total_calls }}</strong></p>
+        <p>Errores simulados detectados (acumulado): <strong>{{ error_stats.simulated_errors }}</strong></p>
+        {# La detección es el manejo del None en la vista. El porcentaje de errores detectados siempre será el porcentaje de errores simulados. #}
+        <p>Porcentaje de errores detectados: <strong>{{ error_stats.error_percentage }}%</strong></p>
+        {# Opcional: Botón/Enlace para resetear las estadísticas si incluyes esa funcionalidad #}
+        {# <p><a href="{% url 'reset_error_stats' %}">Reiniciar Estadísticas</a></p> #}
+    </div>
+    {# --- Fin estadísticas --- #}
+
 </div>
 
 {% endblock %}
