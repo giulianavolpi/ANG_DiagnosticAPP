@@ -20,4 +20,4 @@ def check_doctor_existence(doctor_id):
     # Simula el delay de 15 a 30 ms
     time.sleep(random.uniform(0.015, 0.03))
 
-    return random.random() < 0.8
+    return True #Lo cambio porq ya no necesitamos
