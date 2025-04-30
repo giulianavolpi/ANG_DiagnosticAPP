@@ -2,7 +2,7 @@
 
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction # Opcional, para mayor seguridad
-from tu_app.utils.error_simulation import reset_error_stats # Asegúrate de la ruta correcta
+from diagnosticapp.utils.error_simulation import reset_error_stats # Asegúrate de la ruta correcta
 
 class Command(BaseCommand):
     help = 'Reinicia los contadores de simulación de errores en la base de datos.'
