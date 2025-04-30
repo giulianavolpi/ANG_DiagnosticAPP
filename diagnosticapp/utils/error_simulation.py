@@ -2,7 +2,7 @@
 import random
 import functools
 # Importa el modelo de la base de datos
-from diagnosticapp.models import SimulationStats # Ajusta la ruta de importación
+from paciente.models import SimulationStats # Ajusta la ruta de importación
 # Importa F para actualizaciones atómicas
 from django.db.models import F
 from django.db import transaction # Para asegurar atomicidad si es necesario, aunque F() ya ayuda
