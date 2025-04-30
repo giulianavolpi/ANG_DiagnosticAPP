@@ -48,11 +48,11 @@ def pacientes_list(request):
     error_stats = get_error_stats()
 
     context = {
-        # 'pacientes_list': pacientes_obtenidos if pacientes_obtenidos is not None else [], # Opción 1: Siempre pasar lista o lista vacía
-        'pacientes_list': pacientes_obtenidos, # Opción 2: Pasar None si hubo error. El template debe manejarlo. Elegimos esta para distinguirlo claramente.
         'error_simulado_en_esta_llamada': error_simulado_en_esta_llamada, # Pasa el flag
         'error_stats': error_stats, # Pasa las estadísticas acumuladas
-        'doctor_id_buscado': doctor_id if isinstance(doctor_id, int) else None # Opcional: pasar el ID buscado al template
+        'doctor_id_buscado': doctor_id if isinstance(doctor_id, int) else None, #pasar el ID buscado al template
+        'pacientes_list': pacientes_obtenidos
+        
     }
 
     return render(request, 'paciente/pacientes.html', context)
