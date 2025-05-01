@@ -48,12 +48,12 @@ def pacientes_list(request):
     error_stats = get_error_stats()
 
     context = {
-        
+
         'pacientes_list': pacientes_obtenidos,
         'error_simulado_en_esta_llamada': error_simulado_en_esta_llamada, # Pasa el flag
         'error_stats': error_stats, # Pasa las estadísticas acumuladas
         'doctor_id_buscado': doctor_id if isinstance(doctor_id, int) else None #pasar el ID buscado al template
-        
+
     }
 
     return render(request, 'paciente/pacientes.html', context)

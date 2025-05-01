@@ -32,9 +32,7 @@
     <div style="margin-top: 30px; border-top: 1px solid #ccc; padding-top: 20px;">
       <h2>Estadísticas de Simulación de Errores</h2>
       <p>Total de llamadas a la función (acumulado): <strong>{{ error_stats.total_calls }}</strong></p>
-      <p>Errores simulados (acumulado): <strong>{{ error_stats.simulated_errors }}</strong></p> {# Quizás cambiar la etiqueta para mayor claridad #}
-      {# La detección es el manejo del None en la vista. Con nuestra lógica, todos los errores simulados son detectados. #}
-      <p>Porcentaje de errores detectados (de los simulados): <strong>{% if error_stats.simulated_errors > 0 %}100.00%{% else %}0.00%{% endif %}</strong></p> {# Mostrar 100% si hay errores simulados #}
+      <p>Errores simulados (acumulado): <strong>{{ error_stats.simulated_errors }}</strong></p>
     </div>
     {# --- Fin estadísticas --- #}
     

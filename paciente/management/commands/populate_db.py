@@ -4,7 +4,7 @@ import random
 from django.core.management.base import BaseCommand
 from faker import Faker
 from infoAdmin.models import Medico
-from paciente.models import Paciente
+from paciente.models import Paciente, SimulationStats
 
 class Command(BaseCommand):
     help = (
@@ -64,3 +64,11 @@ class Command(BaseCommand):
         ))
 
         self.stdout.write(self.style.SUCCESS("Población de la base de datos completada."))
+
+        self.stdout.write("Creando filas de la tabla de errores (1, 2, 3)...")
+        for pk in (1, 2, 3):
+            SimulationStats.objects.update_or_create(
+                pk=pk,
+                defaults={"total_calls": 0, "simulated_errors": 0},
+            )
+        self.stdout.write(self.style.SUCCESS("Filas creadas."))

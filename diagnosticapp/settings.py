@@ -84,7 +84,7 @@ DATABASES = {
         "NAME": "bdproyecto",
         "USER": "afgomezg1",
         "PASSWORD": "password",
-        "HOST": "10.128.0.52",
+        "HOST": "localhost",
         "PORT": "",
     }
 }
