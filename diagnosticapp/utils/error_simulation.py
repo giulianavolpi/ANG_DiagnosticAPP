@@ -37,33 +37,14 @@ def simulate_error_probability(probability=0.1):
         return wrapper
     return decorator
 
-def get_error_stats():
-    """
-    Obtiene las estadísticas de errores simulados desde la base de datos.
-
-    Returns:
-        dict: Un diccionario con 'total_calls', 'simulated_errors' y 'error_percentage'.
-              Retorna 0 para los contadores si no existen.
-    """
+def get_error_stats(param_pk):
     try:
-        # Intenta obtener la única fila de estadísticas
-        stats = SimulationStats.objects.get(pk=1)
-        total_calls = stats.total_calls
+        stats = SimulationStats.objects.get(pk=param_pk)
         simulated_errors = stats.simulated_errors
     except SimulationStats.DoesNotExist:
-        # Si la fila aún no existe, los contadores son 0
-        total_calls = 0
         simulated_errors = 0
 
-    error_percentage = 0.0
-    if total_calls > 0:
-        error_percentage = (simulated_errors / total_calls) * 100
-
-    return {
-        'total_calls': total_calls,
-        'simulated_errors': simulated_errors,
-        'error_percentage': round(error_percentage, 2) # Redondear para mostrar
-    }
+    return simulated_errors
 
 # Opcional: Función para resetear los contadores en la base de datos
 def reset_error_stats():

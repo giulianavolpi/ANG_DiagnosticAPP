@@ -1,59 +1,91 @@
+import json
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
+
+from django.db.models import F
+from django.http import JsonResponse
 from django.shortcuts import render
-from .logic.logic_paciente import get_pacientes
-#PARA ERRORES
-from diagnosticapp.utils.error_simulation import get_error_stats # Ajusta la ruta de importación
+
+from diagnosticapp.utils.error_simulation import get_error_stats
+
+from .models import SimulationStats
+
+# Internal endpoints of your diagnostic app instances
+DIAGNOSTIC_HOSTS = [
+    "http://10.128.0.53:8000",
+    "http://10.128.0.54:8000",
+    "http://10.128.0.55:8000",
+]
 
 def pacientes_list(request):
-    """
-    Obtiene el doctor_id de la petición GET y llama a la función de la lógica para obtener
-    los pacientes asociados al doctor, llamando a la función de
-    'get_pacientes'. Luego, renderiza la plantilla 'paciente/pacientes.html'
-    con el contexto de la lista de pacientes.
+    # 1. Parse and normalize doctor_id
+    raw_id = request.GET.get("doctor_id")
+    try:
+        doctor_id = int(raw_id) if raw_id is not None else None
+    except ValueError:
+        doctor_id = None
 
-    Args:
-        request (HttpRequest): Objeto de la petición HTTP que contiene los parámetros de la solicitud.
-
-    Returns:
-        HttpResponse: Respuesta renderizada con la plantilla 'paciente/pacientes.html' y el contexto con la lista de pacientes.
-    """
-    doctor_id = request.GET.get('doctor_id')
-    pacientes_obtenidos = None # Inicializar la variable para el resultado de la lógica
-    error_simulado_en_esta_llamada = False # Flag para indicar error simulado en esta petición
-
-    if doctor_id:
+    # 2. Fan out GET /pacientes/ to each diagnostic host
+    responses = []
+    for host in DIAGNOSTIC_HOSTS:
+        url = f"{host}/pacientes/?doctor_id={doctor_id}"
+        req = Request(url, headers={"Accept": "application/json"})
         try:
-            doctor_id = int(doctor_id)
-            # Llama a la función de lógica con el doctor_id
-            # Esta llamada ahora puede retornar None debido al decorador
-            pacientes_obtenidos = get_pacientes(doctor_id)
+            with urlopen(req, timeout=5) as resp:
+                data = resp.read().decode("utf-8")
+                responses.append(json.loads(data))
+        except (HTTPError, URLError) as e:
+            responses.append({"error": str(e)})
 
-            # --- ¡Nueva Lógica de Detección de Error Simulado! ---
-            if pacientes_obtenidos is None:
-                # Si la función retornó None, es nuestro error simulado
-                error_simulado_en_esta_llamada = True
-                # Podrías querer registrar esto aquí si necesitas logging adicional a lo del decorador
-                # logger.error(f"Error simulado detectado en vista para doctor_id {doctor_id}")
-                # Para mostrar *algo* en la tabla aunque haya error, puedes pasar una lista vacía
-                # pacientes_obtenidos = [] # <- Decide si quieres mostrar tabla vacía o dejar None
-                                         #    Si dejas None, el template debe manejarlo.
-                                         #    En el template modificado abajo, manejo el None.
-            # --- Fin Nueva Lógica ---
+    # 3. Compare the JSON responses
+    serialized = [json.dumps(r, sort_keys=True) for r in responses]
+    all_same = len(set(serialized)) == 1
+    error_detectado_en_esta_llamada = not all_same
 
-        except ValueError:
-            # Manejar caso donde doctor_id no es un entero si es necesario
-            # Por ahora, simplemente no se llama a get_pacientes si falla la conversión
-            pass # o podrías setear un error_message en el context
+    # 4. Update your SimulationStats counters
+    stats, _ = SimulationStats.objects.get_or_create(pk=4)
+    SimulationStats.objects.filter(pk=4).update(total_calls=F("total_calls") + 1)
+    if error_detectado_en_esta_llamada:
+        SimulationStats.objects.filter(pk=4).update(simulated_errors=F("simulated_errors") + 1)
 
-    # Obtén las estadísticas acumuladas de errores
-    error_stats = get_error_stats()
+    # 5. Prepare the list of pacientes for the template
+    #    If they all agree, use the common result; otherwise you can choose
+    #    e.g. to show the first or an empty list. Here we pick the first.
+    pacientes_obtenidos = responses[0] if all_same else responses[0]
 
+    # 6. Build and return the context for render()
     context = {
+        "pacientes_list": pacientes_obtenidos,
+        "error_simulado_en_esta_llamada": error_detectado_en_esta_llamada,
+        "doctor_id_buscado": doctor_id if isinstance(doctor_id, int) else None,
+    }
+    return render(request, "paciente/pacientes.html", context)
 
-        'pacientes_list': pacientes_obtenidos,
-        'error_simulado_en_esta_llamada': error_simulado_en_esta_llamada, # Pasa el flag
-        'error_stats': error_stats, # Pasa las estadísticas acumuladas
-        'doctor_id_buscado': doctor_id if isinstance(doctor_id, int) else None #pasar el ID buscado al template
 
+from django.http import JsonResponse
+
+def errores(request):
+    # 1. Fetch counts
+    detected_errors = get_error_stats(4)
+    simulated_errors = (
+        get_error_stats(1)
+        + get_error_stats(2)
+        + get_error_stats(3)
+    )
+
+    # 2. Compute percentage (avoid division by zero)
+    if simulated_errors > 0:
+        porcentaje_detectado = (detected_errors / simulated_errors) * 100
+    else:
+        porcentaje_detectado = 0.0
+
+    # 3. Build response data
+    data = {
+        "errores_simulados": simulated_errors,
+        "errores_detectados": detected_errors,
+        "porcentaje_errores_detectados": round(porcentaje_detectado, 2),
     }
 
-    return render(request, 'paciente/pacientes.html', context)
+    # 4. Return as JSON
+    return JsonResponse(data)
+

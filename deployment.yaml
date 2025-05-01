@@ -14,6 +14,7 @@ resources:
         - IPProtocol: TCP
           ports:
             - 8080
+
   - name: cbd-services-apps-web
     type: compute.v1.firewall
     properties:
@@ -28,10 +29,11 @@ resources:
         - IPProtocol: TCP
           ports:
             - 8080
+
   - name: cbd-circuit-breaker
     type: compute.v1.firewall
     properties:
-      network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+      network: https://www.googleapis.com/compute/v1/projects/galvanated-pipe-458400-p7/global/networks/default
       priority: 1000
       direction: INGRESS
       sourceRanges:
@@ -42,6 +44,7 @@ resources:
         - IPProtocol: TCP
           ports:
             - 8000
+
   - name: cbd-circuit-breaker-admin
     type: compute.v1.firewall
     properties:
@@ -56,6 +59,7 @@ resources:
         - IPProtocol: TCP
           ports:
             - 8001
+
   - name: cbd-diagnosticapp-db
     type: compute.v1.firewall
     properties:
@@ -71,7 +75,23 @@ resources:
           ports:
             - 5432
 
-  # Router y NAT
+  # New firewall rule: allow the voting-coordinator to call diagnostic apps on port 8000
+  - name: allow-coordinator-to-diagnostics
+    type: compute.v1.firewall
+    properties:
+      network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+      priority: 1000
+      direction: INGRESS
+      sourceTags:
+        - cbd-circuit-breaker
+      targetTags:
+        - cbd-services-firewall
+      allowed:
+        - IPProtocol: TCP
+          ports:
+            - 8000
+
+  # Router and NAT
   - name: cbd-router
     type: compute.v1.router
     properties:
@@ -81,29 +101,6 @@ resources:
         - name: cbd-nat
           natIpAllocateOption: AUTO_ONLY
           sourceSubnetworkIpRangesToNat: ALL_SUBNETWORKS_ALL_IP_RANGES
-
-  # Kong instance
-  - type: compute.v1.instance
-    name: cbd-kong-instance
-    properties:
-      zone: us-central1-a
-      machineType: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/zones/us-central1-a/machineTypes/e2-micro
-      disks:
-        - deviceName: boot
-          type: PERSISTENT
-          boot: true
-          autoDelete: true
-          initializeParams:
-            sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
-      networkInterfaces:
-        - network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
-          networkIP: 10.128.0.51
-          accessConfigs:
-            - name: External NAT
-              type: ONE_TO_ONE_NAT
-      tags:
-        items:
-          - cbd-circuit-breaker
 
   # Database instance
   - type: compute.v1.instance
@@ -138,6 +135,45 @@ resources:
               echo "max_connections=2000" | sudo tee -a /etc/postgresql/12/main/postgresql.conf
               sudo service postgresql restart
 
+  # Voting coordinator instance
+  - type: compute.v1.instance
+    name: cbd-voting-coordinator-instance
+    properties:
+      zone: us-central1-a
+      machineType: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/zones/us-central1-a/machineTypes/e2-micro
+      disks:
+        - deviceName: boot
+          type: PERSISTENT
+          boot: true
+          autoDelete: true
+          initializeParams:
+            sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
+      networkInterfaces:
+        - network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+          networkIP: 10.128.0.51
+          accessConfigs:
+            - name: External NAT
+              type: ONE_TO_ONE_NAT
+      tags:
+        items:
+          - cbd-circuit-breaker
+      metadata:
+        items:
+          - key: startup-script
+            value: |
+              #!/bin/bash
+              sudo apt-get update
+              sudo apt install python3-pip -y
+              sudo mkdir /labs
+              cd /labs
+              sudo git clone https://github.com/giulianavolpi/ANG_DiagnosticAPP
+              cd ANG_DiagnosticAPP
+              sudo git checkout coordinadorVoting
+              sudo pip3 install -r requirements.txt
+              sudo python3 manage.py makemigrations
+              sudo python3 manage.py migrate
+              sudo python3 manage.py populate_db
+
   # Diagnostic app instances
   - type: compute.v1.instance
     name: cbd-diagnostic-app-a
@@ -168,6 +204,7 @@ resources:
               cd /labs
               sudo git clone https://github.com/giulianavolpi/ANG_DiagnosticAPP
               cd ANG_DiagnosticAPP
+              sudo git checkout votingApp1
               sudo pip3 install -r requirements.txt
               sudo python3 manage.py makemigrations
               sudo python3 manage.py migrate
@@ -201,6 +238,7 @@ resources:
               cd /labs
               sudo git clone https://github.com/giulianavolpi/ANG_DiagnosticAPP
               cd ANG_DiagnosticAPP
+              sudo git checkout votingApp2
               sudo pip3 install -r requirements.txt
               sudo python3 manage.py makemigrations
               sudo python3 manage.py migrate
@@ -234,6 +272,7 @@ resources:
               cd /labs
               sudo git clone https://github.com/giulianavolpi/ANG_DiagnosticAPP
               cd ANG_DiagnosticAPP
+              sudo git checkout votingApp3
               sudo pip3 install -r requirements.txt
               sudo python3 manage.py makemigrations
               sudo python3 manage.py migrate
