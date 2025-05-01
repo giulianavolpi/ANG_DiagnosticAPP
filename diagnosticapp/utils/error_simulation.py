@@ -22,14 +22,14 @@ def simulate_error_probability(probability=0.1):
         def wrapper(*args, **kwargs):
             # Incrementar el contador total de llamadas usando la base de datos (atómicamente)
             # Usamos get_or_create para asegurarnos de que la fila existe
-            stats, created = SimulationStats.objects.get_or_create(pk=1)
-            SimulationStats.objects.filter(pk=1).update(total_calls=F('total_calls') + 1)
+            stats, created = SimulationStats.objects.get_or_create(pk=3)
+            SimulationStats.objects.filter(pk=3).update(total_calls=F('total_calls') + 1)
 
             # Simular el error basado en la probabilidad
             if random.random() < probability:
                 logger.warning(f"Simulando error en {func.__name__} con probabilidad {probability} (DB Counter)")
                 # Incrementar el contador de errores simulados (atómicamente)
-                SimulationStats.objects.filter(pk=1).update(simulated_errors=F('simulated_errors') + 1)
+                SimulationStats.objects.filter(pk=3).update(simulated_errors=F('simulated_errors') + 1)
                 return None # Retornar None para simular el error
             else:
                 # Si no hay error simulado, ejecutar la función original
@@ -47,7 +47,7 @@ def get_error_stats():
     """
     try:
         # Intenta obtener la única fila de estadísticas
-        stats = SimulationStats.objects.get(pk=1)
+        stats = SimulationStats.objects.get(pk=3)
         total_calls = stats.total_calls
         simulated_errors = stats.simulated_errors
     except SimulationStats.DoesNotExist:
@@ -72,7 +72,7 @@ def reset_error_stats():
     Elimina la fila para resetear.
     """
     try:
-        stats = SimulationStats.objects.get(pk=1)
+        stats = SimulationStats.objects.get(pk=3)
         stats.delete() # Elimina la fila
         logger.info("Contadores de simulación de errores reiniciados en la base de datos.")
     except SimulationStats.DoesNotExist:
