@@ -1,9 +1,9 @@
 resources:
-  # External HTTP access to voting coordinator
-  - name: coordinator-firewall-web
+  # Firewall: allow external access to voting coordinator on port 8080
+  - name: allow-external-to-coordinator
     type: compute.v1.firewall
     properties:
-      network: projects/arquisoft-sprint3/global/networks/default
+      network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
       priority: 1000
       direction: INGRESS
       sourceRanges:
@@ -15,11 +15,11 @@ resources:
           ports:
             - 8080
 
-  # Internal traffic: coordinator -> diagnostic apps
+  # Firewall: allow internal access from coordinator to diagnostic apps on port 8000
   - name: allow-coordinator-to-diagnostics
     type: compute.v1.firewall
     properties:
-      network: projects/arquisoft-sprint3/global/networks/default
+      network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
       priority: 1000
       direction: INGRESS
       sourceTags:
@@ -31,30 +31,50 @@ resources:
           ports:
             - 8000
 
-  # Router and NAT for egress of instances without external IP
+  # Router and NAT
   - name: cbd-router
     type: compute.v1.router
     properties:
       region: us-central1
-      network: projects/arquisoft-sprint3/global/networks/default
+      network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
       nats:
         - name: cbd-nat
           natIpAllocateOption: AUTO_ONLY
           sourceSubnetworkIpRangesToNat: ALL_SUBNETWORKS_ALL_IP_RANGES
 
-  # Voting Coordinator instance with external IP
+  # Cloud SQL PostgreSQL instance
+  - name: cbd-postgres
+    type: gcp-types/sqladmin-v1beta4:instances
+    properties:
+      region: us-central1
+      databaseVersion: POSTGRES_13
+      settings:
+        tier: db-f1-micro
+        ipConfiguration:
+          ipv4Enabled: true
+          authorizedNetworks:
+            - value: 0.0.0.0/0
+        dataDiskSizeGb: 10
+        dataDiskType: PD_SSD
+        activationPolicy: ALWAYS
+      rootPassword: postgres
+
+  # Coordinator
   - type: compute.v1.instance
     name: cbd-voting-coordinator-instance
     properties:
       zone: us-central1-a
-      machineType: projects/arquisoft-sprint3/zones/us-central1-a/machineTypes/e2-micro
+      machineType: zones/us-central1-a/machineTypes/e2-micro
       disks:
-        - boot: true
+        - deviceName: boot
+          type: PERSISTENT
+          boot: true
           autoDelete: true
           initializeParams:
             sourceImage: projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
       networkInterfaces:
-        - network: projects/arquisoft-sprint3/global/networks/default
+        - network: global/networks/default
+          networkIP: 10.128.0.51
           accessConfigs:
             - name: External NAT
               type: ONE_TO_ONE_NAT
@@ -67,25 +87,34 @@ resources:
             value: |
               #!/bin/bash
               sudo apt-get update
-              sudo pip3 install -r /labs/ANG_DiagnosticAPP/requirements.txt
-              cd /labs/ANG_DiagnosticAPP
+              sudo apt install python3-pip -y
+              sudo mkdir /labs
+              cd /labs
+              sudo git clone https://github.com/giulianavolpi/ANG_DiagnosticAPP
+              cd ANG_DiagnosticAPP
+              sudo git checkout coordinadorVoting
+              sudo pip3 install -r requirements.txt
+              sudo python3 manage.py makemigrations
               sudo python3 manage.py migrate
+              sudo python3 manage.py populate_db
               sudo nohup python3 manage.py runserver 0.0.0.0:8080 &
 
-  # Diagnostic app instances (no external IP)
+  # Diagnostic App A
   - type: compute.v1.instance
     name: cbd-diagnostic-app-a
     properties:
       zone: us-central1-a
-      machineType: projects/arquisoft-sprint3/zones/us-central1-a/machineTypes/e2-micro
+      machineType: zones/us-central1-a/machineTypes/e2-micro
       disks:
-        - boot: true
+        - deviceName: boot
+          type: PERSISTENT
+          boot: true
           autoDelete: true
           initializeParams:
             sourceImage: projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
       networkInterfaces:
-        - network: projects/arquisoft-sprint3/global/networks/default
-          # no accessConfigs = no external IP
+        - network: global/networks/default
+          networkIP: 10.128.0.53
       tags:
         items:
           - cbd-services-firewall
@@ -95,23 +124,33 @@ resources:
             value: |
               #!/bin/bash
               sudo apt-get update
-              sudo pip3 install -r /labs/ANG_DiagnosticAPP/requirements.txt
-              cd /labs/ANG_DiagnosticAPP
+              sudo apt install python3-pip -y
+              sudo mkdir /labs
+              cd /labs
+              sudo git clone https://github.com/giulianavolpi/ANG_DiagnosticAPP
+              cd ANG_DiagnosticAPP
+              sudo git checkout votingApp1
+              sudo pip3 install -r requirements.txt
+              sudo python3 manage.py makemigrations
               sudo python3 manage.py migrate
               sudo nohup python3 manage.py runserver 0.0.0.0:8000 &
 
+  # Diagnostic App B
   - type: compute.v1.instance
     name: cbd-diagnostic-app-b
     properties:
       zone: us-central1-a
-      machineType: projects/arquisoft-sprint3/zones/us-central1-a/machineTypes/e2-micro
+      machineType: zones/us-central1-a/machineTypes/e2-micro
       disks:
-        - boot: true
+        - deviceName: boot
+          type: PERSISTENT
+          boot: true
           autoDelete: true
           initializeParams:
             sourceImage: projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
       networkInterfaces:
-        - network: projects/arquisoft-sprint3/global/networks/default
+        - network: global/networks/default
+          networkIP: 10.128.0.54
       tags:
         items:
           - cbd-services-firewall
@@ -121,23 +160,33 @@ resources:
             value: |
               #!/bin/bash
               sudo apt-get update
-              sudo pip3 install -r /labs/ANG_DiagnosticAPP/requirements.txt
-              cd /labs/ANG_DiagnosticAPP
+              sudo apt install python3-pip -y
+              sudo mkdir /labs
+              cd /labs
+              sudo git clone https://github.com/giulianavolpi/ANG_DiagnosticAPP
+              cd ANG_DiagnosticAPP
+              sudo git checkout votingApp2
+              sudo pip3 install -r requirements.txt
+              sudo python3 manage.py makemigrations
               sudo python3 manage.py migrate
               sudo nohup python3 manage.py runserver 0.0.0.0:8000 &
 
+  # Diagnostic App C
   - type: compute.v1.instance
     name: cbd-diagnostic-app-c
     properties:
       zone: us-central1-a
-      machineType: projects/arquisoft-sprint3/zones/us-central1-a/machineTypes/e2-micro
+      machineType: zones/us-central1-a/machineTypes/e2-micro
       disks:
-        - boot: true
+        - deviceName: boot
+          type: PERSISTENT
+          boot: true
           autoDelete: true
           initializeParams:
             sourceImage: projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
       networkInterfaces:
-        - network: projects/arquisoft-sprint3/global/networks/default
+        - network: global/networks/default
+          networkIP: 10.128.0.55
       tags:
         items:
           - cbd-services-firewall
@@ -147,7 +196,13 @@ resources:
             value: |
               #!/bin/bash
               sudo apt-get update
-              sudo pip3 install -r /labs/ANG_DiagnosticAPP/requirements.txt
-              cd /labs/ANG_DiagnosticAPP
+              sudo apt install python3-pip -y
+              sudo mkdir /labs
+              cd /labs
+              sudo git clone https://github.com/giulianavolpi/ANG_DiagnosticAPP
+              cd ANG_DiagnosticAPP
+              sudo git checkout votingApp3
+              sudo pip3 install -r requirements.txt
+              sudo python3 manage.py makemigrations
               sudo python3 manage.py migrate
               sudo nohup python3 manage.py runserver 0.0.0.0:8000 &
