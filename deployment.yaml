@@ -1,99 +1,85 @@
 resources:
-  # Firewall: allow apps to receive calls from coordinator (8000)
+  # Firewall: allow coordinator to call diagnostics (port 8000)
   - name: cbd-services-apps
     type: compute.v1.firewall
     properties:
-      network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+      network: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/global/networks/default
       priority: 1000
       direction: INGRESS
-      sourceTags:
-        - cbd-circuit-breaker
-      targetTags:
-        - cbd-services-firewall
+      sourceTags: [cbd-circuit-breaker]
+      targetTags: [cbd-services-firewall]
       allowed:
         - IPProtocol: TCP
-          ports:
-            - 8000
+          ports: [8000]
 
-  # Firewall: allow public access to coordinator (8000 and 8001)
+  # Firewall: allow public access to coordinator (port 8000)
   - name: cbd-circuit-breaker
     type: compute.v1.firewall
     properties:
-      network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+      network: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/global/networks/default
       priority: 1000
       direction: INGRESS
-      sourceRanges:
-        - 0.0.0.0/0
-      targetTags:
-        - cbd-circuit-breaker
+      sourceRanges: ["0.0.0.0/0"]
+      targetTags: [cbd-circuit-breaker]
       allowed:
         - IPProtocol: TCP
-          ports:
-            - 8000
+          ports: [8000]
 
+  # Firewall: allow admin access to coordinator (port 8001)
   - name: cbd-circuit-breaker-admin
     type: compute.v1.firewall
     properties:
-      network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+      network: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/global/networks/default
       priority: 1000
       direction: INGRESS
-      sourceRanges:
-        - 0.0.0.0/0
-      targetTags:
-        - cbd-circuit-breaker
+      sourceRanges: ["0.0.0.0/0"]
+      targetTags: [cbd-circuit-breaker]
       allowed:
         - IPProtocol: TCP
-          ports:
-            - 8001
+          ports: [8001]
 
-  # Firewall: allow diagnostics and coordinator to access database (5432)
+  # Firewall: allow diagnostics & coordinator to access DB (port 5432)
   - name: cbd-diagnosticapp-db
     type: compute.v1.firewall
     properties:
-      network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+      network: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/global/networks/default
       priority: 1000
       direction: INGRESS
-      sourceTags:
-        - cbd-services-firewall
-      targetTags:
-        - cbd-diagnosticapp-db
+      sourceTags: [cbd-services-firewall]
+      targetTags: [cbd-diagnosticapp-db]
       allowed:
         - IPProtocol: TCP
-          ports:
-            - 5432
+          ports: [5432]
 
   - name: cbd-coordinator-db-access
     type: compute.v1.firewall
     properties:
-      network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+      network: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/global/networks/default
       priority: 1000
       direction: INGRESS
-      sourceTags:
-        - cbd-circuit-breaker
-      targetTags:
-        - cbd-diagnosticapp-db
+      sourceTags: [cbd-circuit-breaker]
+      targetTags: [cbd-diagnosticapp-db]
       allowed:
         - IPProtocol: TCP
-          ports:
-            - 5432
+          ports: [5432]
 
-  # Router and NAT
+  # Router and NAT for VMs without external IPs
   - name: cbd-router
     type: compute.v1.router
     properties:
       region: us-central1
-      network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+      network: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/global/networks/default
       nats:
         - name: cbd-nat
           natIpAllocateOption: AUTO_ONLY
           sourceSubnetworkIpRangesToNat: ALL_SUBNETWORKS_ALL_IP_RANGES
 
-  # Database instance
+  # Database VM
   - type: compute.v1.instance
     name: cbd-db-instance
     properties:
       zone: us-central1-a
-      machineType: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/zones/us-central1-a/machineTypes/e2-micro
+      machineType: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/zones/us-central1-a/machineTypes/e2-micro
       disks:
         - deviceName: boot
           type: PERSISTENT
@@ -102,11 +88,9 @@ resources:
           initializeParams:
             sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
       networkInterfaces:
-        - network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+        - network: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/global/networks/default
           networkIP: 10.128.0.52
-      tags:
-        items:
-          - cbd-diagnosticapp-db
+      tags: {items: [cbd-diagnosticapp-db]}
       metadata:
         items:
           - key: startup-script
@@ -121,12 +105,12 @@ resources:
               echo "max_connections=2000" | sudo tee -a /etc/postgresql/12/main/postgresql.conf
               sudo service postgresql restart
 
-  # Voting coordinator instance
+  # Voting Coordinator VM
   - type: compute.v1.instance
     name: cbd-voting-coordinator-instance
     properties:
       zone: us-central1-a
-      machineType: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/zones/us-central1-a/machineTypes/e2-micro
+      machineType: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/zones/us-central1-a/machineTypes/e2-micro
       disks:
         - deviceName: boot
           type: PERSISTENT
@@ -135,14 +119,12 @@ resources:
           initializeParams:
             sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
       networkInterfaces:
-        - network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+        - network: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/global/networks/default
           networkIP: 10.128.0.51
           accessConfigs:
             - name: External NAT
               type: ONE_TO_ONE_NAT
-      tags:
-        items:
-          - cbd-circuit-breaker
+      tags: {items: [cbd-circuit-breaker]}
       metadata:
         items:
           - key: startup-script
@@ -160,12 +142,12 @@ resources:
               sudo python3 manage.py migrate
               sudo python3 manage.py populate_db
 
-  # Diagnostic app instances
+  # Diagnostic App A
   - type: compute.v1.instance
     name: cbd-diagnostic-app-a
     properties:
       zone: us-central1-a
-      machineType: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/zones/us-central1-a/machineTypes/e2-micro
+      machineType: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/zones/us-central1-a/machineTypes/e2-micro
       disks:
         - deviceName: boot
           type: PERSISTENT
@@ -174,11 +156,9 @@ resources:
           initializeParams:
             sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
       networkInterfaces:
-        - network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+        - network: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/global/networks/default
           networkIP: 10.128.0.53
-      tags:
-        items:
-          - cbd-services-firewall
+      tags: {items: [cbd-services-firewall]}
       metadata:
         items:
           - key: startup-script
@@ -195,11 +175,12 @@ resources:
               sudo python3 manage.py makemigrations
               sudo python3 manage.py migrate
 
+  # Diagnostic App B
   - type: compute.v1.instance
     name: cbd-diagnostic-app-b
     properties:
       zone: us-central1-a
-      machineType: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/zones/us-central1-a/machineTypes/e2-micro
+      machineType: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/zones/us-central1-a/machineTypes/e2-micro
       disks:
         - deviceName: boot
           type: PERSISTENT
@@ -208,11 +189,9 @@ resources:
           initializeParams:
             sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
       networkInterfaces:
-        - network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+        - network: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/global/networks/default
           networkIP: 10.128.0.54
-      tags:
-        items:
-          - cbd-services-firewall
+      tags: {items: [cbd-services-firewall]}
       metadata:
         items:
           - key: startup-script
@@ -229,11 +208,12 @@ resources:
               sudo python3 manage.py makemigrations
               sudo python3 manage.py migrate
 
+  # Diagnostic App C
   - type: compute.v1.instance
     name: cbd-diagnostic-app-c
     properties:
       zone: us-central1-a
-      machineType: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/zones/us-central1-a/machineTypes/e2-micro
+      machineType: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/zones/us-central1-a/machineTypes/e2-micro
       disks:
         - deviceName: boot
           type: PERSISTENT
@@ -242,11 +222,9 @@ resources:
           initializeParams:
             sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
       networkInterfaces:
-        - network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+        - network: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/global/networks/default
           networkIP: 10.128.0.55
-      tags:
-        items:
-          - cbd-services-firewall
+      tags: {items: [cbd-services-firewall]}
       metadata:
         items:
           - key: startup-script
