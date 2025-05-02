@@ -3,7 +3,7 @@ resources:
   - name: cbd-services-apps
     type: compute.v1.firewall
     properties:
-      network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+      network: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/global/networks/default
       priority: 1000
       direction: INGRESS
       sourceTags:
@@ -18,7 +18,7 @@ resources:
   - name: cbd-services-apps-web
     type: compute.v1.firewall
     properties:
-      network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+      network: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/global/networks/default
       priority: 1000
       direction: INGRESS
       sourceRanges:
@@ -33,7 +33,7 @@ resources:
   - name: cbd-circuit-breaker
     type: compute.v1.firewall
     properties:
-      network: https://www.googleapis.com/compute/v1/projects/galvanated-pipe-458400-p7/global/networks/default
+      network: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/global/networks/default
       priority: 1000
       direction: INGRESS
       sourceRanges:
@@ -48,7 +48,7 @@ resources:
   - name: cbd-circuit-breaker-admin
     type: compute.v1.firewall
     properties:
-      network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+      network: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/global/networks/default
       priority: 1000
       direction: INGRESS
       sourceRanges:
@@ -63,7 +63,7 @@ resources:
   - name: cbd-diagnosticapp-db
     type: compute.v1.firewall
     properties:
-      network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+      network: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/global/networks/default
       priority: 1000
       direction: INGRESS
       sourceTags:
@@ -75,11 +75,11 @@ resources:
           ports:
             - 5432
 
-  # New firewall rule: allow the voting-coordinator to call diagnostic apps on port 8000
+  # Allow coordinator to call diagnostic apps on port 8000
   - name: allow-coordinator-to-diagnostics
     type: compute.v1.firewall
     properties:
-      network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+      network: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/global/networks/default
       priority: 1000
       direction: INGRESS
       sourceTags:
@@ -96,7 +96,7 @@ resources:
     type: compute.v1.router
     properties:
       region: us-central1
-      network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+      network: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/global/networks/default
       nats:
         - name: cbd-nat
           natIpAllocateOption: AUTO_ONLY
@@ -107,7 +107,7 @@ resources:
     name: cbd-db-instance
     properties:
       zone: us-central1-a
-      machineType: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/zones/us-central1-a/machineTypes/e2-micro
+      machineType: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/zones/us-central1-a/machineTypes/e2-micro
       disks:
         - deviceName: boot
           type: PERSISTENT
@@ -116,7 +116,7 @@ resources:
           initializeParams:
             sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
       networkInterfaces:
-        - network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+        - network: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/global/networks/default
           networkIP: 10.128.0.52
       tags:
         items:
@@ -140,7 +140,7 @@ resources:
     name: cbd-voting-coordinator-instance
     properties:
       zone: us-central1-a
-      machineType: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/zones/us-central1-a/machineTypes/e2-micro
+      machineType: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/zones/us-central1-a/machineTypes/e2-micro
       disks:
         - deviceName: boot
           type: PERSISTENT
@@ -149,7 +149,7 @@ resources:
           initializeParams:
             sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
       networkInterfaces:
-        - network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+        - network: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/global/networks/default
           networkIP: 10.128.0.51
           accessConfigs:
             - name: External NAT
@@ -179,7 +179,7 @@ resources:
     name: cbd-diagnostic-app-a
     properties:
       zone: us-central1-a
-      machineType: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/zones/us-central1-a/machineTypes/e2-micro
+      machineType: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/zones/us-central1-a/machineTypes/e2-micro
       disks:
         - deviceName: boot
           type: PERSISTENT
@@ -188,7 +188,7 @@ resources:
           initializeParams:
             sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
       networkInterfaces:
-        - network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+        - network: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/global/networks/default
           networkIP: 10.128.0.53
       tags:
         items:
@@ -213,7 +213,7 @@ resources:
     name: cbd-diagnostic-app-b
     properties:
       zone: us-central1-a
-      machineType: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/zones/us-central1-a/machineTypes/e2-micro
+      machineType: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/zones/us-central1-a/machineTypes/e2-micro
       disks:
         - deviceName: boot
           type: PERSISTENT
@@ -222,7 +222,7 @@ resources:
           initializeParams:
             sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
       networkInterfaces:
-        - network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+        - network: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/global/networks/default
           networkIP: 10.128.0.54
       tags:
         items:
@@ -247,7 +247,7 @@ resources:
     name: cbd-diagnostic-app-c
     properties:
       zone: us-central1-a
-      machineType: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/zones/us-central1-a/machineTypes/e2-micro
+      machineType: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/zones/us-central1-a/machineTypes/e2-micro
       disks:
         - deviceName: boot
           type: PERSISTENT
@@ -256,7 +256,7 @@ resources:
           initializeParams:
             sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
       networkInterfaces:
-        - network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+        - network: https://www.googleapis.com/compute/v1/projects/arquisoft-sprint3/global/networks/default
           networkIP: 10.128.0.55
       tags:
         items:
