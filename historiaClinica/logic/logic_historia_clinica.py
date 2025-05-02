@@ -19,15 +19,14 @@ def extract_medical_history(patients):
     # Por cada paciente, si existe en el sistema del hospital, se guarda su información
     patients_data = []
     for patient in patients:
-        # Simula la existencia del paciente en el sistema de historias clínicas del hospital con una probabilidad del 80%
-        if random.random() < 0.8:
-            paciente_info = {
-                'id': patient.id,
-                'nombres': patient.nombres,
-                'apellidos': patient.apellidos,
-                'edad': patient.edad,
-                'historia_clinica': f"Historia Clinica del paciente {patient.id}"
-            }
-            patients_data.append(paciente_info)
+
+        paciente_info = {
+            'id': patient.id,
+            'nombres': patient.nombres,
+            'apellidos': patient.apellidos,
+            'edad': patient.edad,
+            'historia_clinica': f"Historia Clinica del paciente {patient.id}"
+        }
+        patients_data.append(paciente_info)
 
     return patients_data
