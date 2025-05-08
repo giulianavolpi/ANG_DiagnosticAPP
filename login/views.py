@@ -1,8 +1,8 @@
 # login/views.py
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-# Importamos la función de heurística
-from heuristica.logic.logic_heuristica import check_suspicious # <<< Importación de otra app
+# Importamos la función de heurística desde su nueva ruta
+from heuristica.logic.logic_heuristica import check_suspicious # <<< RUTA CORREGIDA
 
 # Necesitaremos reverse para redirigir a la URL de login si no se pasa el ID
 from django.urls import reverse
@@ -49,7 +49,7 @@ def login_view(request):
         # La heuristica guardará sus errores GENERADOS, emitirá una señal,
         # y nos devolverá True si lo marcó como sospechoso, False si no.
         # Puedes pasar una probabilidad diferente si quieres, pero la heuristica
-        # también tiene una probabilidad por defecto.
+        # también tiene una probabilidad por defecto (definida en logic_heuristica.py).
         heuristica_result = check_suspicious(username) # Aquí llamamos a la lógica de heuristica
 
         logger.info(f"LOGIN VIEW: Llamada a heuristica para usuario '{username}', resultado: {heuristica_result}")
@@ -57,8 +57,6 @@ def login_view(request):
         # --- 4. Decidir la respuesta de login principal basada en el resultado de la Heurística ---
         # Simulación de login principal: Permite acceso (redirigir) si la heurística
         # NO lo marcó como sospechoso. Si SÍ lo marcó, se impide el acceso.
-        # Podríamos añadir una simulación ADICIONAL de "credenciales válidas" aquí si quisieras,
-        # pero por simplicidad, el acceso principal depende SÓLO de la heurística.
 
         if not heuristica_result:
             # Si la heuristica NO lo marcó como sospechoso
@@ -70,8 +68,10 @@ def login_view(request):
             # request.session.set_expiry(0) # Configurar expiración de sesión
             # --- Redirigir a la página principal (simula entrada) ---
             # Usamos reverse para obtener la URL raíz si está nombrada, o simplemente '/'
-            # return redirect(reverse('index')) # Si la URL raíz se llama 'index'
-            return redirect('/') # Si la URL raíz es simplemente '/'
+            # NOTA: Si la URL '/' no tiene un nombre específico (como 'index'), usa redirect('/').
+            # Si tienes una vista 'index' nombrada, usa reverse('index').
+            # Asumiremos que la página principal es '/' sin nombre explícito para este redirect.
+            return redirect('/') # Redirige a la página principal (simula entrada)
 
 
         else: # heuristica_result is True

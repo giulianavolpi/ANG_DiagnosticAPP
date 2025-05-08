@@ -1,9 +1,11 @@
+# heuristica/logic/logic_heuristica.py
 import random
 import logging
-# Importa el modelo donde guarda sus "errores generados"
-from ..models import GeneratedSuspiciousAttempt
-# Importa la señal que va a emitir
-from ..signals import heuristica_checked # La crearemos en el siguiente paso
+# Importa el modelo donde guarda sus "errores generados" (está en el mismo nivel de app)
+from heuristica.models import GeneratedSuspiciousAttempt # Correcto, no cambia
+
+# Importa la señal que va a emitir (está en el mismo nivel de app)
+from heuristica.signals import heuristica_checked # Correcto, no cambia
 
 
 logger = logging.getLogger(__name__)
@@ -38,6 +40,7 @@ def check_suspicious(username_attempt, probability=0.2): # Define la probabilida
     # Emite la señal SIN esperar respuesta. El receptor (en reportar) actuará aparte.
     try:
         # Pasamos el resultado de la heurística en la señal para que el receptor lo use
+        # 'sender=None' es típico para señales definidas en el módulo signals.py
         heuristica_checked.send(sender=None, username=username_attempt, is_suspicious=is_suspicious)
         logger.info(f"HEURISTICA LOGIC: Señal 'heuristica_checked' emitida para '{username_attempt}' (Sospechoso: {is_suspicious}).")
     except Exception as e:

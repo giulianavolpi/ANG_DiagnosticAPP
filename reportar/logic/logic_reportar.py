@@ -1,15 +1,18 @@
-# reportar/receivers.py
-# Importa la señal de la app heuristica que vamos a escuchar
-from heuristica.signals import heuristica_checked
-# Importa el modelo donde vamos a guardar las detecciones
-from ..models import DetectedSuspiciousAttempt
+# reportar/logic/logic_reportar.py
+# Importa la señal de la app heuristica que vamos a escuchar (está en otra app)
+from heuristica.signals import heuristica_checked # Correcto, no cambia
+
+# Importa el modelo donde vamos a guardar las detecciones (está en el mismo nivel de app)
+from reportar.models import DetectedSuspiciousAttempt # Correcto, no cambia
+
 import logging
 
 logger = logging.getLogger(__name__)
 
 # --- Receptor para la señal heuristica_checked ---
 # Esta función se activará cuando la señal heuristica_checked sea emitida.
-# Recibe el sender y los argumentos que la señal envió (username, is_suspicious).
+# Se conectará a través de reportar/apps.py
+# Recibe sender y los argumentos que la señal envió (username, is_suspicious).
 def report_suspicious_receiver(sender, username=None, is_suspicious=None, **kwargs):
     """
     Receptor de señal para la señal heuristica_checked.
@@ -22,6 +25,7 @@ def report_suspicious_receiver(sender, username=None, is_suspicious=None, **kwar
     if is_suspicious:
         # --- 2. Reportar registra su "Error Detectado" en su propia base de datos ---
         try:
+            # Crea el registro en el modelo de reportar
             DetectedSuspiciousAttempt.objects.create(username_attempted=username)
             logger.warning(f"REPORTAR RECEIVER: '{username}' marcado como sospechoso por heuristica y REGISTRADO (Detectado).")
         except Exception as e:
