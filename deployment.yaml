@@ -16,6 +16,25 @@
 
 resources:
   # --- Firewall rules ---
+  # Regla para permitir SSH a ambas VMs
+- name: allow-ssh
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    # Permite SSH desde cualquier IP (considera restringir esto en un entorno real)
+    sourceRanges:
+    - 0.0.0.0/0
+    # Aplica a las VMs etiquetadas como db-server o app-server
+    targetTags:
+    - db-server
+    - app-server
+    allowed:
+    - IPProtocol: TCP
+      ports:
+      - 22 # Puerto estándar para SSH
+
 
   # Regla para permitir que la App hable con la DB (puerto PostgreSQL)
   - name: app-to-db-firewall
