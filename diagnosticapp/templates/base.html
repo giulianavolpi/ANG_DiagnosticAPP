@@ -35,17 +35,13 @@
                         <a class="nav-link" href="/pacientes/">Pacientes</a>
                     </li>
 
-                    {# --- Nuevos enlaces de navegación --- #}
                     <li class="nav-item">
-                        {# Usamos el nombre de URL 'login' definido en login/urls.py #}
                         <a class="nav-link" href="{% url 'login' %}">Login</a>
                     </li>
 
                     <li class="nav-item">
-                        {# Usamos el nombre de URL 'report_stats' definido en reportar/urls.py #}
                         <a class="nav-link" href="{% url 'report_stats' %}">Reporte de Seguridad</a>
                     </li>
-                    {# --- Fin Nuevos enlaces --- #}
 
                 </ul>
                 </div>
@@ -54,7 +50,6 @@
 
         <main>
             <div class="container" style="min-height: 580px;">
-            {# Este bloque será llenado por las plantillas que extienden base.html #}
             {% block content %}
             {% endblock %}
             </div>

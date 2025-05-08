@@ -1,4 +1,3 @@
-# reportar/views.py
 from django.shortcuts import render
 # Importa los modelos de AMBAS apps para obtener los contadores y la lista de detectados
 from heuristica.models import GeneratedSuspiciousAttempt # Importa el modelo de heuristica

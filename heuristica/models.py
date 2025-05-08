@@ -1,4 +1,3 @@
-# heuristica/models.py
 from django.db import models
 
 class GeneratedSuspiciousAttempt(models.Model):
@@ -12,9 +11,6 @@ class GeneratedSuspiciousAttempt(models.Model):
 
     # Marca de tiempo de la decisión de la heurística
     timestamp = models.DateTimeField(auto_now_add=True)
-
-    # Opcional: Podrías añadir un campo para la probabilidad usada en la simulación si fuera relevante guardarlo
-    # simulated_probability = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
 
 
     class Meta:

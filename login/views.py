@@ -1,13 +1,9 @@
-# login/views.py
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-# Importamos la función de heurística desde su nueva ruta
 from heuristica.logic.logic_heuristica import check_suspicious
 
-# Necesitaremos reverse para redirigir a la URL de login si no se pasa el ID
 from django.urls import reverse
 
-# Opcional: logging
 import logging
 logger = logging.getLogger(__name__)
 
@@ -62,7 +58,7 @@ def login_view(request):
             # Si la heuristica NO lo marcó como sospechoso
             message = f"Login para '{username}' simulado como exitoso (No sospechoso)."
             logger.info(f"LOGIN VIEW: Login simulado exitoso y no sospechoso para '{username}' -> Redirigiendo.")
-            # >>> Aquí iría la lógica para marcar la sesión como autenticado si fuera necesario persistir <<<
+            # >>> Aquí iría la lógica para marcar la sesión como autenticado si fuera necesario persistir TODO: No lo pusimos por simplicidad, no toca poner lo de los tokens entonecs chill<<<
             # request.session['simulated_authenticated'] = True
             # request.session['simulated_username'] = username
             # request.session.set_expiry(0) # Configurar expiración de sesión
@@ -79,7 +75,7 @@ def login_view(request):
             message = f"Login para '{username}' marcado como SOSPECHOSO por la heurística. Acceso impedido."
             # --- AÑADIR LOGGING PARA INGRESO FALLIDO SIMULADO ---
             logger.warning(f"LOGIN VIEW: INGRESO FALLIDO SIMULADO (Sospechoso) para '{username}'. Impidiendo acceso.") # <<< Nuevo log
-            # >>> Aquí iría la lógica para asegurar que la sesión NO esté marcada como autenticado <<<
+            # >>> Aquí iría la lógica para asegurar que la sesión NO esté marcada como autenticado TODO: no va again chill<<<
             # request.session['simulated_authenticated'] = False
             # if 'simulated_username' in request.session: del request.session['simulated_username']
             # Nos quedamos en la página de login mostrando el mensaje de sospecha

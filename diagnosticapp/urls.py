@@ -25,7 +25,6 @@ urlpatterns = [
     path('report/', include('reportar.urls')), #Nueva too
     path('', include('paciente.urls')),
     path('health/', views.healthCheck, name='health'),
-    #path('security/', include('security.urls')),
-    #path('', RedirectView.as_view(url='/security/login/', permanent=False)),
+
 
 ]

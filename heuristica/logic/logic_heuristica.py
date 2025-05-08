@@ -1,17 +1,14 @@
-# heuristica/logic/logic_heuristica.py
 import random
 import logging
-# Importa el modelo donde guarda sus "errores generados" (está en el mismo nivel de app)
-from heuristica.models import GeneratedSuspiciousAttempt # Correcto, no cambia
+from heuristica.models import GeneratedSuspiciousAttempt 
 
-# Importa la señal que va a emitir (está en el mismo nivel de app)
-from heuristica.signals import heuristica_checked # Correcto, no cambia
+from heuristica.signals import heuristica_checked #Para la señal que emite, propio de django
 
 
 logger = logging.getLogger(__name__)
 
 
-def check_suspicious(username_attempt, probability=0.2): # Define la probabilidad aquí
+def check_suspicious(username_attempt, probability=0.2): #TODO: cambiar probabilidad a lo q queramos
     """
     Simula la ejecución de una heurística.
     Con una probabilidad, marca el intento como sospechoso y lo registra en la DB de heuristica.
@@ -40,12 +37,11 @@ def check_suspicious(username_attempt, probability=0.2): # Define la probabilida
     # Emite la señal SIN esperar respuesta. El receptor (en reportar) actuará aparte.
     try:
         # Pasamos el resultado de la heurística en la señal para que el receptor lo use
-        # 'sender=None' es típico para señales definidas en el módulo signals.py
         heuristica_checked.send(sender=None, username=username_attempt, is_suspicious=is_suspicious)
         logger.info(f"HEURISTICA LOGIC: Señal 'heuristica_checked' emitida para '{username_attempt}' (Sospechoso: {is_suspicious}).")
     except Exception as e:
          logger.error(f"HEURISTICA LOGIC: ERROR al emitir señal 'heuristica_checked' para '{username_attempt}': {e}", exc_info=True)
 
 
-    # --- 3. Heuristica retorna el resultado booleano directamente a quien la llamó (login) ---
+    # --- 3. Heuristica retorna el resultado booleano directamente a la app delogin ---
     return is_suspicious

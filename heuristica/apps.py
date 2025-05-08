@@ -1,10 +1,9 @@
-# heuristica/apps.py
 from django.apps import AppConfig
 
 class HeuristicaConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'heuristica'
-    verbose_name = 'Heurística de Seguridad' # Nombre más amigable
+    verbose_name = 'Heurística de Seguridad'
 
     def ready(self):
         """
@@ -12,8 +11,8 @@ class HeuristicaConfig(AppConfig):
         Importamos el módulo signals para que las definiciones y posibles
         conexiones internas (si las hubiera) se registren.
         """
-        # Importar el módulo signals
-        from . import signals # Esto es suficiente para que las señales se definan
+        # Importar el módulo signals para definir las esñales
+        from . import signals 
 
         # NOTA: La conexión del receptor (que estará en reportar)
         # se hará en el apps.py de la app 'reportar'.

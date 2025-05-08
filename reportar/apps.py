@@ -1,10 +1,9 @@
-# reportar/apps.py
 from django.apps import AppConfig
 
 class ReportarConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'reportar'
-    verbose_name = 'Reportes de Seguridad' # Nombre más amigable
+    verbose_name = 'Reportes de Seguridad' 
 
     def ready(self):
         """
@@ -15,7 +14,7 @@ class ReportarConfig(AppConfig):
         from .logic.logic_reportar import report_suspicious_receiver # <<< RUTA CORREGIDA
 
         # Importar la señal de la app 'heuristica' que queremos escuchar
-        from heuristica.signals import heuristica_checked # Correcto, no cambia
+        from heuristica.signals import heuristica_checked 
 
         # --- Conectar la señal 'heuristica_checked' al receptor 'report_suspicious_receiver' ---
         # No especificamos un sender aquí porque la señal de heuristica es personalizada.

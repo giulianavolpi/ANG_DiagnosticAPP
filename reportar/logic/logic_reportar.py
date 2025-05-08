@@ -1,9 +1,8 @@
-# reportar/logic/logic_reportar.py
 # Importa la señal de la app heuristica que vamos a escuchar (está en otra app)
-from heuristica.signals import heuristica_checked # Correcto, no cambia
+from heuristica.signals import heuristica_checked 
 
 # Importa el modelo donde vamos a guardar las detecciones (está en el mismo nivel de app)
-from reportar.models import DetectedSuspiciousAttempt # Correcto, no cambia
+from reportar.models import DetectedSuspiciousAttempt 
 
 import logging
 
