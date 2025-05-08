@@ -27,6 +27,34 @@
         {% endif %}
     </div>
 
+    {# --- Sección para mostrar la lista de intentos sospechosos detectados (log de fallidos simulados) --- #}
+    <div style="margin-top: 40px; border-top: 1px solid #ccc; padding-top: 20px;">
+        <h3>Historial de Ingresos Fallidos Simulados (Sospechosos Detectados)</h3>
+
+        {% if detected_attempts_list %}
+            <table class="table table-striped table-sm"> {# Usamos table-sm para hacerla un poco más compacta #}
+                <thead>
+                    <tr>
+                        <th>Usuario Intentado</th>
+                        <th>Fecha/Hora de Detección</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attempt in detected_attempts_list %}
+                    <tr>
+                        <td>{{ attempt.username_attempted|default:'N/A' }}</td>
+                        <td>{{ attempt.timestamp|date:"Y-m-d H:i:s" }}</td> {# Formateamos la fecha/hora #}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No se han detectado ingresos fallidos simulados (sospechosos) todavía.</p>
+        {% endif %}
+    </div>
+    {# --- Fin Sección Historial --- #}
+
+
     <p style="margin-top: 20px;"><a href="{% url 'login' %}">Volver a la página de login</a></p>
 
 </div>
