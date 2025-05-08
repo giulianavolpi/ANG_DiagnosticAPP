@@ -20,7 +20,7 @@ from django.views.generic import RedirectView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    #path('', views.index), por ahjora comemnte
+    path('', views.index), 
     path('', include('login.urls')), # La nueva para este sprint
     path('report/', include('reportar.urls')), #Nueva too
     path('', include('paciente.urls')),

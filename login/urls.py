@@ -3,9 +3,10 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # Mapeamos la URL '/login/' a la vista login_view
-    # Le damos el nombre 'login' para poder referenciarla fácilmente (ej: en redirecciones)
-    path('', views.login_view, name='login'),
-    # Si quieres que sea en el path '/login/', la linea seria:
-    # path('login/', views.login_view, name='login'),
+    # Mapeamos la URL '/login/' DENTRO de la app 'login' a la vista login_view.
+    # Con el include en diagnosticapp/urls.py, la URL final será /login/.
+    path('login/', views.login_view, name='login'),
+
+    # La línea original path('', views.login_view, name='login') ya no se usa
+    # si quieres que la URL sea /login/.
 ]
