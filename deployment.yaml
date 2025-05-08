@@ -1,80 +1,65 @@
-resources:
-  # Firewall rules
-  - name: cbd-services-apps
-    type: compute.v1.firewall
-    properties:
-      network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
-      priority: 1000
-      direction: INGRESS
-      sourceTags:
-        - cbd-circuit-breaker
-      targetTags:
-        - cbd-services-firewall
-      allowed:
-        - IPProtocol: TCP
-          ports:
-            - 8080
-  - name: cbd-services-apps-web
-    type: compute.v1.firewall
-    properties:
-      network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
-      priority: 1000
-      direction: INGRESS
-      sourceRanges:
-        - 0.0.0.0/0
-      targetTags:
-        - cbd-services-firewall
-      allowed:
-        - IPProtocol: TCP
-          ports:
-            - 8080
-  - name: cbd-circuit-breaker
-    type: compute.v1.firewall
-    properties:
-      network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
-      priority: 1000
-      direction: INGRESS
-      sourceRanges:
-        - 0.0.0.0/0
-      targetTags:
-        - cbd-circuit-breaker
-      allowed:
-        - IPProtocol: TCP
-          ports:
-            - 8000
-  - name: cbd-circuit-breaker-admin
-    type: compute.v1.firewall
-    properties:
-      network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
-      priority: 1000
-      direction: INGRESS
-      sourceRanges:
-        - 0.0.0.0/0
-      targetTags:
-        - cbd-circuit-breaker
-      allowed:
-        - IPProtocol: TCP
-          ports:
-            - 8001
-  - name: cbd-diagnosticapp-db
-    type: compute.v1.firewall
-    properties:
-      network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
-      priority: 1000
-      direction: INGRESS
-      sourceTags:
-        - cbd-services-firewall
-      targetTags:
-        - cbd-diagnosticapp-db
-      allowed:
-        - IPProtocol: TCP
-          ports:
-            - 5432
+# ***************** Universidad de los Andes ***********************
+# ****** Departamento de Ingeniería de Sistemas y Computación ******
+# ********** Arquitectura y diseño de Software - ISIS2503 **********
+#
+# Elementos a desplegar:
+# 1. Firewalls:
+#    - allow-ssh (acceso SSH a VMs)
+#    - app-to-db-firewall (Comunicación App -> DB)
+#    - external-to-app-firewall (Acceso Web -> App)
+# 2. Router y NAT:
+#    - cbd-router
+#    - cbd-nat
+# 3. Instancias MVs:
+#    - cbd-db-instance (postgreSQL instalado y configurado)
+#    - cbd-app-instance (Aplicación básica instalada)
 
-  # Router y NAT
+resources:
+  # --- Firewall rules ---
+
+  # Regla para permitir que la App hable con la DB (puerto PostgreSQL)
+  - name: app-to-db-firewall
+    type: compute.v1.firewall
+    properties:
+      network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+      priority: 1000
+      direction: INGRESS
+      # Desde VMs con la etiqueta 'app-server'
+      sourceTags:
+        - app-server
+      # Hacia VMs con la etiqueta 'db-server'
+      targetTags:
+        - db-server
+      allowed:
+        - IPProtocol: TCP
+          ports:
+            - 5432 # Puerto estándar de PostgreSQL
+
+  # Regla para permitir acceso externo (web) a la App
+  - name: external-to-app-firewall
+    type: compute.v1.firewall
+    properties:
+      network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
+      priority: 1000
+      direction: INGRESS
+      # Desde cualquier IP (Internet)
+      sourceRanges:
+        - 0.0.0.0/0
+      # Hacia VMs con la etiqueta 'app-server'
+      targetTags:
+        - app-server
+      allowed:
+        - IPProtocol: TCP
+          # Puerto donde escucha tu aplicación (ajusta si usas otro)
+          ports:
+            - 8080
+
+  # --- Router y NAT ---
+  # Mantengo los nombres originales por referencia al código fuente
   - name: cbd-router
     type: compute.v1.router
     properties:
+      # Elige una región
       region: us-central1
       network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
       nats:
@@ -82,33 +67,12 @@ resources:
           natIpAllocateOption: AUTO_ONLY
           sourceSubnetworkIpRangesToNat: ALL_SUBNETWORKS_ALL_IP_RANGES
 
-  # Kong instance
-  - type: compute.v1.instance
-    name: cbd-kong-instance
-    properties:
-      zone: us-central1-a
-      machineType: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/zones/us-central1-a/machineTypes/e2-micro
-      disks:
-        - deviceName: boot
-          type: PERSISTENT
-          boot: true
-          autoDelete: true
-          initializeParams:
-            sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
-      networkInterfaces:
-        - network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
-          networkIP: 10.128.0.51
-          accessConfigs:
-            - name: External NAT
-              type: ONE_TO_ONE_NAT
-      tags:
-        items:
-          - cbd-circuit-breaker
-
-  # Database instance
+  # --- Database instance ---
+  # Mantengo el nombre original de la instancia
   - type: compute.v1.instance
     name: cbd-db-instance
     properties:
+      # Elige una zona dentro de la región del router
       zone: us-central1-a
       machineType: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/zones/us-central1-a/machineTypes/e2-micro
       disks:
@@ -121,10 +85,13 @@ resources:
       networkInterfaces:
         - network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
           networkIP: 10.128.0.52
+          accessConfigs: # Esto le da una IP externa
+            - name: External NAT
+              type: ONE_TO_ONE_NAT
       tags:
         items:
-          - cbd-diagnosticapp-db
-      metadata:
+          - db-server # Etiqueta simplificada
+      metadata: # Script para instalar y configurar PostgreSQL
         items:
           - key: startup-script
             value: |
@@ -138,10 +105,12 @@ resources:
               echo "max_connections=2000" | sudo tee -a /etc/postgresql/12/main/postgresql.conf
               sudo service postgresql restart
 
-  # Diagnostic app instances
+  # --- Application instance ---
+  # Renombramos para claridad, pero mantenemos la estructura de las instancias de app originales
   - type: compute.v1.instance
-    name: cbd-diagnostic-app-a
+    name: cbd-app-instance # Nombre simplificado
     properties:
+      # Misma zona que la DB
       zone: us-central1-a
       machineType: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/zones/us-central1-a/machineTypes/e2-micro
       disks:
@@ -154,10 +123,13 @@ resources:
       networkInterfaces:
         - network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
           networkIP: 10.128.0.53
+          accessConfigs: # Esto le da una IP externa
+            - name: External NAT
+              type: ONE_TO_ONE_NAT
       tags:
         items:
-          - cbd-services-firewall
-      metadata:
+          - app-server # Etiqueta simplificada
+      metadata: # Script para obtener la aplicación e instalar dependencias
         items:
           - key: startup-script
             value: |
@@ -168,72 +140,7 @@ resources:
               cd /labs
               sudo git clone https://github.com/giulianavolpi/ANG_DiagnosticAPP
               cd ANG_DiagnosticAPP
-              sudo pip3 install -r requirements.txt
-              sudo python3 manage.py makemigrations
-              sudo python3 manage.py migrate
-
-  - type: compute.v1.instance
-    name: cbd-diagnostic-app-b
-    properties:
-      zone: us-central1-a
-      machineType: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/zones/us-central1-a/machineTypes/e2-micro
-      disks:
-        - deviceName: boot
-          type: PERSISTENT
-          boot: true
-          autoDelete: true
-          initializeParams:
-            sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
-      networkInterfaces:
-        - network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
-          networkIP: 10.128.0.54
-      tags:
-        items:
-          - cbd-services-firewall
-      metadata:
-        items:
-          - key: startup-script
-            value: |
-              #!/bin/bash
-              sudo apt-get update
-              sudo apt install python3-pip -y
-              sudo mkdir /labs
-              cd /labs
-              sudo git clone https://github.com/giulianavolpi/ANG_DiagnosticAPP
-              cd ANG_DiagnosticAPP
-              sudo pip3 install -r requirements.txt
-              sudo python3 manage.py makemigrations
-              sudo python3 manage.py migrate
-
-  - type: compute.v1.instance
-    name: cbd-diagnostic-app-c
-    properties:
-      zone: us-central1-a
-      machineType: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/zones/us-central1-a/machineTypes/e2-micro
-      disks:
-        - deviceName: boot
-          type: PERSISTENT
-          boot: true
-          autoDelete: true
-          initializeParams:
-            sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
-      networkInterfaces:
-        - network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
-          networkIP: 10.128.0.55
-      tags:
-        items:
-          - cbd-services-firewall
-      metadata:
-        items:
-          - key: startup-script
-            value: |
-              #!/bin/bash
-              sudo apt-get update
-              sudo apt install python3-pip -y
-              sudo mkdir /labs
-              cd /labs
-              sudo git clone https://github.com/giulianavolpi/ANG_DiagnosticAPP
-              cd ANG_DiagnosticAPP
+              sudo git checkout nicolas23
               sudo pip3 install -r requirements.txt
               sudo python3 manage.py makemigrations
               sudo python3 manage.py migrate
