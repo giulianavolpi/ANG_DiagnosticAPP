@@ -2,7 +2,7 @@
 
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
-from django.contrib.auth import get_user_model # Opcional: si quieres verificar si es superuser
+# from django.contrib.auth import get_user_model # Opcional: si quieres verificar si es superuser
 
 # Importa los modelos de ambas aplicaciones
 from heuristica.models import GeneratedSuspiciousAttempt
@@ -13,18 +13,19 @@ import logging
 logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
-    help = 'Limpia todos los registros de intentos sospechosos generados por heurística y detectados por reportar.'
+    help = 'Limpia todos los registros de intentos sospechosos generados por heurística y detectados por reportar (sin confirmación).' # Actualizado el help text
 
-    # Añadir un argumento para forzar sin confirmación (útil en scripts automatizados)
-    def add_arguments(self, parser):
-        parser.add_argument(
-            '--no-input',
-            action='store_true',
-            help='No pedir confirmación antes de limpiar la base de datos.',
-        )
+    # Ya no necesitamos el argumento --no-input si no hay confirmación manual
+    # def add_arguments(self, parser):
+    #     parser.add_argument(
+    #         '--no-input',
+    #         action='store_true',
+    #         help='No pedir confirmación antes de limpiar la base de datos.',
+    #     )
 
     def handle(self, *args, **options):
-        self.stdout.write("⚠️ ADVERTENCIA: Este comando eliminará TODOS los registros de intentos sospechosos.")
+        # Mensaje de advertencia sigue siendo útil para saber qué hace el comando
+        self.stdout.write("⚠️ ADVERTENCIA: Este comando eliminará TODOS los registros de intentos sospechosos sin confirmación.")
         self.stdout.write(f"Tablas a limpiar: {GeneratedSuspiciousAttempt._meta.db_table} y {DetectedSuspiciousAttempt._meta.db_table}")
 
         # Opcional: Verificar si el usuario que ejecuta el comando es superuser (requiere autenticación de Django)
@@ -32,19 +33,21 @@ class Command(BaseCommand):
         # try:
         #     # Esto asume que estás ejecutando manage.py con un usuario autenticado,
         #     # lo cual no es el caso típico para comandos de management.
-        #     # Una verificación más simple es solo la confirmación manual.
+        #     # Una verificación más simple es solo la confirmación manual (que hemos quitado).
         #     pass
         # except User.DoesNotExist:
-        #     pass # No hay usuario autenticado, confiar en la confirmación manual.
+        #     pass # No hay usuario autenticado.
 
 
-        # Pedir confirmación a menos que se use --no-input
-        if not options['no_input']:
-            confirm = input("¿Estás ABSOLUTAMENTE seguro de que quieres continuar? Escribe 'yes' para confirmar: ")
-            if confirm.lower() != 'yes':
-                raise CommandError("Limpieza cancelada por el usuario.")
+        # --- BLOQUE DE CONFIRMACIÓN MANUAL ELIMINADO ---
+        # if not options['no_input']:
+        #     confirm = input("¿Estás ABSOLUTAMENTE seguro de que quieres continuar? Escribe 'yes' para confirmar: ")
+        #     if confirm.lower() != 'yes':
+        #         raise CommandError("Limpieza cancelada por el usuario.")
+        # --- FIN BLOQUE DE CONFIRMACIÓN MANUAL ELIMINADO ---
 
-        self.stdout.write("Iniciando proceso de limpieza...")
+
+        self.stdout.write("Iniciando proceso de limpieza (sin confirmación)...") # Actualizado el mensaje
 
         try:
             # Usar una transacción para asegurar que ambas eliminaciones se completen o ninguna
