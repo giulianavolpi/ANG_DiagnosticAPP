@@ -1,42 +1,26 @@
 # security/views.py
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-import random
+import random # Todavía necesario para simular el resultado del login principal
 import logging
-from .models import SuspiciousLoginAttempt # Importamos el modelo que creamos
+# Ya NO necesitamos importar SuspiciousLoginAttempt
+# Ya NO necesitamos importar check_suspicious_login
+# Importa la señal que creaste
+from .signals import login_attempt # <<< Importa la señal
+
+# Importa el modelo SOLO para obtener el contador total para la vista
+from .models import SuspiciousLoginAttempt # <<< Importa el modelo solo para el contador
 
 logger = logging.getLogger(__name__)
 
-# --- Lógica de Simulación de Ingreso Sospechoso ---
-def check_suspicious_login(username_attempt, probability=0.2): # Ajusta la probabilidad aquí (ej: 20%)
-    """
-    Simula la revisión de un intento de login.
-    Con una probabilidad, lo marca como sospechoso y lo registra.
+# La función check_suspicious_login YA NO ESTA AQUI. Esta en signals.py.
 
-    Args:
-        username_attempt (str): El nombre de usuario intentado.
-        probability (float): Probabilidad (0.0 a 1.0) de marcar como sospechoso.
 
-    Returns:
-        bool: True si el intento fue marcado y registrado como sospechoso, False en caso contrario.
-    """
-    is_suspicious = random.random() < probability
-
-    if is_suspicious:
-        logger.warning(f"Simulando ingreso sospechoso para usuario: {username_attempt}")
-        # Registrar el intento sospechoso en la base de datos
-        # Esto es nuestra "detección exitosa del 100%" del evento simulado
-        SuspiciousLoginAttempt.objects.create(username_attempted=username_attempt)
-        return True # Indicamos que fue sospechoso y detectado
-    else:
-        logger.info(f"Ingreso simulado normal para usuario: {username_attempt}")
-        return False # Indicamos que no fue marcado como sospechoso
-
-# --- Vista de Login ---
+# --- Vista de Login (Simplificada) ---
 def login_view(request):
     message = None
     username_attempted = None
-    is_suspicious = False
+    # is_suspicious_result ya no se calcula ni se usa directamente aquí para el mensaje principal
 
     if request.method == 'POST':
         username_attempted = request.POST.get('username')
@@ -44,32 +28,48 @@ def login_view(request):
         if not username_attempted:
             message = "Por favor, ingrese un nombre de usuario."
         else:
-            # Llamamos a nuestra lógica de simulación
-            is_suspicious = check_suspicious_login(username_attempted)
+            # --- ¡Emitir la Señal de Intento de Login! ---
+            # Esta es la acción principal relacionada con el intento.
+            # Los receptores (en signals.py) se encargarán de la lógica secundaria (sospecha, guardar).
+            login_attempt.send(sender=request, username=username_attempted, request=request)
+            logger.info(f"VIEW: Señal 'login_attempt' emitida para usuario: {username_attempted}")
+            # --- Fin Emitir Señal ---
 
-            if is_suspicious:
-                message = f"¡Ingreso para '{username_attempted}' marcado como SOSPECHOSO y DETECTADO!"
-                # Aquí podrías redirigir a una página de "Acceso Denegado" o similar
-                # return render(request, 'security/access_denied.html', {'message': message})
+            # --- Simulación del Resultado del Login Principal (Separado de la sospecha) ---
+            # Esta lógica decide si el login parece "exitoso" o "fallido" desde la perspectiva del usuario,
+            # independientemente de si fue marcado como sospechoso en segundo plano por la señal.
+            if random.random() < 0.8: # Ej: 80% de probabilidad de "login principal exitoso" simulado
+                login_successful_simulated = True
+                message = f"Login para '{username_attempted}' simulado como exitoso."
+                logger.info(f"VIEW: Login principal simulado exitoso para usuario: {username_attempted} -> Redirigiendo.")
+                # Redirige a la página principal si el login principal fue "exitoso" simulado
+                return redirect('/') # Redirige al path raíz
+
             else:
-                message = f"Ingreso para '{username_attempted}' simulado como normal. (No sospechoso)."
-                # Aquí podrías simular un login exitoso y redirigir al inicio, por ejemplo:
-                # return redirect('/') # Redirige a la página principal
+                # Simulación de "login principal fallido"
+                login_successful_simulated = False
+                message = f"Login para '{username_attempted}' simulado como FALLIDO (credenciales inválidas)."
+                logger.info(f"VIEW: Login principal simulado fallido para usuario: {username_attempted} -> Mostrando mensaje de error.")
+                # Nos quedamos en la página de login si el login principal fue "fallido" simulado
 
-    # Si es GET o después de procesar POST (a menos que se redirija)
-    # Prepara el contexto para el template
+    # Prepara el contexto para el template (se usa si es GET o si es POST y el login falló simulado)
     context = {
         'message': message,
         'username_attempted': username_attempted,
-        'is_suspicious': is_suspicious,
-        # Opcional: pasar aquí el total de intentos sospechosos detectados
+        # 'is_suspicious' ya no se necesita aquí para mostrar el mensaje principal,
+        # pero si quisieras mostrar si _este_ intento particular fue marcado como sospechoso,
+        # sería más complejo (ej: buscar el registro recién creado para este usuario/timestamp).
+        # Por simplicidad académica, solo mostramos el resultado del login principal.
+
+        # Pasamos el total de intentos sospechosos detectados (obtenido del modelo por la vista)
         'total_suspicious_detected': SuspiciousLoginAttempt.objects.count()
     }
 
     return render(request, 'security/login.html', context)
 
 
-# --- Opcional: Vista para listar todos los intentos sospechosos detectados ---
+# --- Vista para listar todos los intentos sospechosos detectados ---
+# Esta vista no necesita cambios ya que solo lee del modelo
 def list_suspicious_attempts_view(request):
     attempts = SuspiciousLoginAttempt.objects.all()
     context = {

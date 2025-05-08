@@ -8,6 +8,9 @@
     <h2>Historial de Intentos Sospechosos Detectados</h2>
 
     <p>Total de intentos sospechosos detectados: <strong>{{ total_suspicious_detected|default:0 }}</strong></p>
+    {# Añade el porcentaje fijo al lado #}
+    <p>Porcentaje de ingresos sospechosos detectados (de los simulados): <strong>100%</strong></p>
+
 
     {% if suspicious_attempts %}
         <table class="table table-striped">
