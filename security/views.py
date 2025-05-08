@@ -3,15 +3,37 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 import random
 import logging
-from .models import SuspiciousLoginAttempt
 from .signals import login_attempt
-# Importa reverse si no lo has hecho para las URLs
-from django.urls import reverse # Necesario si usas reverse
+from .models import SuspiciousLoginAttempt # Importamos el modelo que creamos
+# Importar la URL de la página principal si no es solo '/'
+from django.urls import reverse # Necesario si usas reverse para obtener la URL '/'
 
 logger = logging.getLogger(__name__)
 
-# ... tu función check_suspicious_login_receiver (receptor de señal) ...
+# --- Lógica de Simulación de Ingreso Sospechoso ---
+# Mantendremos esta función por ahora, luego la moveremos al usar señales
+def check_suspicious_login(username_attempt, probability=0.2): # Ajusta la probabilidad aquí (ej: 20%)
+    """
+    Simula la revisión de un intento de login.
+    Con una probabilidad, lo marca como sospechoso y lo registra.
 
+    Args:
+        username_attempt (str): El nombre de usuario intentado.
+        probability (float): Probabilidad (0.0 a 1.0) de marcar como sospechoso.
+
+    Returns:
+        bool: True si el intento fue marcado y registrado como sospechoso, False en caso contrario.
+    """
+    is_suspicious = random.random() < probability
+
+    if is_suspicious:
+        logger.warning(f"Simulando ingreso sospechoso para usuario: {username_attempt}")
+        # Registrar el intento sospechoso en la base de datos
+        SuspiciousLoginAttempt.objects.create(username_attempted=username_attempt)
+        return True # Indicamos que fue sospechoso y detectado
+    else:
+        logger.info(f"Ingreso simulado normal para usuario: {username_attempt}")
+        return False # Indicamos que no fue marcado como sospechoso
 
 # --- Vista de Login (Modificada para Sesión) ---
 def login_view(request):
