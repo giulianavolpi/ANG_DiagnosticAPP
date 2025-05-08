@@ -85,9 +85,6 @@ resources:
       networkInterfaces:
         - network: https://www.googleapis.com/compute/v1/projects/galvanized-pipe-458400-p7/global/networks/default
           networkIP: 10.128.0.52
-          accessConfigs: # Esto le da una IP externa
-            - name: External NAT
-              type: ONE_TO_ONE_NAT
       tags:
         items:
           - db-server # Etiqueta simplificada
