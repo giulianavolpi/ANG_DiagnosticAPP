@@ -1,94 +1,103 @@
 # security/views.py
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-import random
+import random  # Necesario para simular el resultado del login principal
 import logging
-from .signals import login_attempt
-from .models import SuspiciousLoginAttempt # Importamos el modelo que creamos
-# Importar la URL de la página principal si no es solo '/'
-from django.urls import reverse # Necesario si usas reverse para obtener la URL '/'
+# Importa reverse para poder redirigir usando nombres de URL
+from django.urls import reverse
+
+# Importa la señal personalizada que creaste
+from .signals import login_attempt # El receptor de esta señal está en signals.py
+
+# Importa el modelo SOLO para obtener el contador total y la lista para la vista de historial
+from .models import SuspiciousLoginAttempt # Usado para SuspiciousLoginAttempt.objects.count() y .all()
+
 
 logger = logging.getLogger(__name__)
 
-# --- Lógica de Simulación de Ingreso Sospechoso ---
-# Mantendremos esta función por ahora, luego la moveremos al usar señales
-def check_suspicious_login(username_attempt, probability=0.2): # Ajusta la probabilidad aquí (ej: 20%)
-    """
-    Simula la revisión de un intento de login.
-    Con una probabilidad, lo marca como sospechoso y lo registra.
+# NOTA: La función check_suspicious_login (con la lógica de simulación de sospecha y guardado en DB)
+# YA NO ESTÁ AQUÍ. Ahora está en security/signals.py como un receptor de señal.
 
-    Args:
-        username_attempt (str): El nombre de usuario intentado.
-        probability (float): Probabilidad (0.0 a 1.0) de marcar como sospechoso.
 
-    Returns:
-        bool: True si el intento fue marcado y registrado como sospechoso, False en caso contrario.
-    """
-    is_suspicious = random.random() < probability
-
-    if is_suspicious:
-        logger.warning(f"Simulando ingreso sospechoso para usuario: {username_attempt}")
-        # Registrar el intento sospechoso en la base de datos
-        SuspiciousLoginAttempt.objects.create(username_attempted=username_attempt)
-        return True # Indicamos que fue sospechoso y detectado
-    else:
-        logger.info(f"Ingreso simulado normal para usuario: {username_attempt}")
-        return False # Indicamos que no fue marcado como sospechoso
-
-# --- Vista de Login (Modificada para Sesión) ---
+# --- Vista de Login ---
+# Maneja la visualización del formulario GET y el procesamiento de datos POST.
+# Emite la señal de intento de login y simula el resultado del login principal.
 def login_view(request):
     message = None
     username_attempted = None
-    # is_suspicious_result ya no se calcula ni se usa directamente aquí para el mensaje principal
+    # is_suspicious_result ya no se usa directamente aquí para el mensaje principal
 
     if request.method == 'POST':
+        # --- 1. Procesar datos del formulario POST ---
         username_attempted = request.POST.get('username')
 
         if not username_attempted:
+            # Si el nombre de usuario está vacío, mostramos un mensaje de error de formulario
             message = "Por favor, ingrese un nombre de usuario."
+            logger.warning("VIEW: Intento de login con usuario vacío.")
+            # La señal NO se emite si no hay usuario intentado válido para la simulación.
         else:
-            # --- Emitir la Señal (la lógica de sospecha ocurre en el receptor) ---
+            # --- 2. Emitir la Señal de Intento de Login (El Evento Ocurrió) ---
+            # Esto notifica a cualquier receptor (como nuestro detector de sospecha)
+            # que un intento de login con este usuario ha ocurrido.
+            # La lógica de simulación de sospecha y guardado en DB ocurre en el receptor.
             login_attempt.send(sender=request, username=username_attempted, request=request)
             logger.info(f"VIEW: Señal 'login_attempt' emitida para usuario: {username_attempted}")
             # --- Fin Emitir Señal ---
 
-            # --- Simulación del Resultado del Login Principal ---
-            # Esta lógica decide si el login parece "exitoso" o "fallido" para el usuario.
+            # --- 3. Simular el Resultado del Login Principal ---
+            # Esta lógica decide si el login parece "exitoso" o "fallido" desde la perspectiva del usuario
+            # que interactúa con la página. Esto es SEPARADO de si fue marcado como sospechoso
+            # por el receptor de señal que corre en segundo plano (sincrónicamente).
             if random.random() < 0.8: # Ej: 80% de probabilidad de "login principal exitoso" simulado
                 login_successful_simulated = True
                 message = f"Login para '{username_attempted}' simulado como exitoso."
                 logger.info(f"VIEW: Login principal simulado exitoso para usuario: {username_attempted} -> Marcando sesión y redirigiendo.")
 
-                # >>> Marcar al usuario como "autenticado" en la sesión <<<
+                # >>> 4. Marcar al usuario como "autenticado" en la sesión si el login principal fue exitoso simulado <<<
                 request.session['simulated_authenticated'] = True
                 request.session['simulated_username'] = username_attempted # Opcional: guardar el nombre de usuario simulado
+                # Reinicia el timeout de la sesión para mantenerla activa
+                request.session.set_expiry(0) # 0 significa que la sesión expira cuando se cierra el navegador
 
-                # Redirige a la página principal si el login principal fue "exitoso" simulado
-                return redirect('/') # O reverse('nombre_de_tu_url_principal')
+                # --- 5. Redirigir a la página principal si el login principal fue "exitoso" simulado ---
+                # Usamos reverse para obtener la URL por su nombre, por si cambia en el futuro.
+                # Asumimos que la URL raíz '/' tiene el nombre 'index' o similar, o simplemente usamos '/' si no tiene nombre.
+                # return redirect(reverse('index')) # Si la URL raíz tiene nombre 'index'
+                return redirect('/') # Si la URL raíz no tiene nombre o es simplemente '/'
 
             else:
-                # Simulación de "login principal fallido"
+                # --- 6. Simulación de "login principal fallido" ---
                 login_successful_simulated = False
                 message = f"Login para '{username_attempted}' simulado como FALLIDO (credenciales inválidas)."
                 logger.info(f"VIEW: Login principal simulado fallido para usuario: {username_attempted} -> Mostrando mensaje de error.")
-                # >>> Opcional: Asegurarse de que la sesión no marque como autenticado <<<
-                request.session['simulated_authenticated'] = False # O simplemente no hacer nada, el False por defecto al leer es suficiente
+                # --- 7. Asegurarse de que la sesión NO marque como autenticado si el login falló simulado ---
+                # Esto es importante para que la vista index lo bloquee.
+                request.session['simulated_authenticated'] = False
                 if 'simulated_username' in request.session:
                      del request.session['simulated_username']
 
-        # Prepara el contexto (si es GET o si es POST y el login falló simulado)
-        context = {
-            'message': message,
-            'username_attempted': username_attempted,
-            'total_suspicious_detected': SuspiciousLoginAttempt.objects.count()
-        }
+        # --- Este código se ejecuta para peticiones GET y para peticiones POST que NO redirigieron ---
+        # Preparar el contexto para renderizar el template
+    context = {
+        'message': message, # Mensaje del resultado del POST o None para GET
+        'username_attempted': username_attempted, # Nombre de usuario del POST o None para GET
+        # 'is_suspicious' ya no se usa aquí para el mensaje principal.
 
-        return render(request, 'security/login.html', context)
+        # --- 8. Pasar el total de intentos sospechosos detectados para mostrar en el template ---
+        # Esto SÍ refleja los eventos guardados en la DB por el receptor de señal.
+        'total_suspicious_detected': SuspiciousLoginAttempt.objects.count()
+    }
+
+    # --- 9. Renderizar el template de login ---
+    # Este es el retorno final para peticiones GET y para POST fallidos simulados.
+    return render(request, 'security/login.html', context)
 
 
-# ... tu vista list_suspicious_attempts_view ...
+# --- Vista para listar todos los intentos sospechosos detectados ---
+# Esta vista solo lee del modelo SuspiciousLoginAttempt y muestra la lista.
+# No necesita cambios después de la reestructuración de señales.
 def list_suspicious_attempts_view(request):
-    # ... (código igual) ...
     attempts = SuspiciousLoginAttempt.objects.all()
     context = {
         'suspicious_attempts': attempts,
