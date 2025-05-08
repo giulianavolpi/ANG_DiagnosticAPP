@@ -1,0 +1,33 @@
+{# reportar/templates/reportar/stats.html #}
+{% extends 'base.html' %} {# Extiende tu plantilla base #}
+
+{% block title %}Reporte de Simulación de Seguridad{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Reporte de Simulación de Seguridad</h2>
+    <p>Comparativa entre Intentos Sospechosos Generados por Heurística y Detectados por Reportar.</p>
+
+    <div style="margin-top: 30px; border: 1px solid #ccc; padding: 20px; border-radius: 5px;">
+        <h3>Estadísticas Acumuladas</h3>
+        <p>Intentos Sospechosos Generados por Heurística: <strong>{{ total_generated }}</strong></p>
+        <p>Intentos Sospechosos Detectados por Reportar: <strong>{{ total_detected }}</strong></p>
+
+        {# Mostrar el porcentaje de detección #}
+        <p>Porcentaje de Detección (Detectados / Generados): <strong>{{ detection_percentage }}%</strong></p>
+
+        {% if total_generated > 0 %}
+             {% if total_detected == total_generated %}
+                 <p style="color: green;">✅ La detección es del 100% sobre los errores generados, como se esperaba.</p>
+             {% else %}
+                 <p style="color: orange;">⚠️ Advertencia: Los errores detectados ({{ total_detected }}) no coinciden con los generados ({{ total_generated }}). Esto podría deberse a retrasos en la base de datos o un problema en la lógica/conexión del receptor.</p>
+             {% endif %}
+        {% else %}
+             <p>Aún no se han generado intentos sospechosos para reportar.</p>
+        {% endif %}
+    </div>
+
+    <p style="margin-top: 20px;"><a href="{% url 'login' %}">Volver a la página de login</a></p>
+
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+{# login/templates/login/login.html #}
+{% extends 'base.html' %} {# Extiende tu plantilla base #}
+
+{% block title %}Simulación de Login{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Login (Simulado)</h2>
+
+    {# Mostrar mensajes de resultado #}
+    {% if message %}
+        <div style="padding: 10px; margin-bottom: 20px; border: 1px solid; {% if 'SOSPECHOSO' in message %} border-color: red; color: red; background-color: #ffe6e6; {% elif 'FALLIDO' in message %} border-color: orange; color: orange; background-color: #fff0e6; {% elif 'exitoso' in message %} border-color: green; color: green; background-color: #e6ffe6; {% endif %}">
+            {{ message }}
+        </div>
+    {% endif %}
+
+    {# Formulario de login simulado (método POST) #}
+    <form method="post" action="{% url 'login' %}"> {# Apunta a la URL nombrada 'login' #}
+        {% csrf_token %} {# Token de seguridad CSRF #}
+        <div class="form-group">
+            <label for="username">Nombre de Usuario (simulado):</label>
+            <input type="text" class="form-control" id="username" name="username" required value="{{ username_attempted|default:'' }}"> {# Mantener el valor intentado #}
+        </div>
+        <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+
+    {# Instrucción para probar con GET #}
+    <p style="margin-top: 20px;">También puedes intentar hacer login visitando una URL como: <br><code>/login/?id=nombre_de_usuario</code></p>
+    {# O si configuraste la app login en la raíz: #}
+    {# <p style="margin-top: 20px;">También puedes intentar hacer login visitando una URL como: <br><code>/?id=nombre_de_usuario</code></p> #}
+
+
+    {# Aquí mostraremos estadísticas de reporte más tarde, en otra página #}
+    {# <p><a href="{% url 'report_stats' %}">Ver Estadísticas de Sospecha Detectada</a></p> #}
+
+
+</div>
+{% endblock %}
