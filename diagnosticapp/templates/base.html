@@ -3,7 +3,9 @@
     <head>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
         {% block head %}
         <title>ANG Solutions</title>
         {% endblock %}
@@ -14,37 +16,52 @@
 
             <nav class="navbar navbar-light bg-light">
                 <a class="navbar-brand">
+                    </a>
+            </nav>
+
+            <nav class="navbar navbar-light bg-light">
+                <a class="navbar-brand" href="/">
+                    Sistema de Apoyo al Diagnóstico de Epilepsia Refractaria
                 </a>
             </nav>
 
-          <nav class="navbar navbar-light bg-light">
-              <a class="navbar-brand" href="/">
-                Sistema de Apoyo al Diagnóstico de Epilepsia Refractaria
-              </a>
-          </nav>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/pacientes/">Pacientes</a>
+                    </li>
 
-          <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="/pacientes/">Pacientes</a>
-                </li>
-          </div>
+                    {# --- Nuevos enlaces de navegación --- #}
+                    <li class="nav-item">
+                        {# Usamos el nombre de URL 'login' definido en login/urls.py #}
+                        <a class="nav-link" href="{% url 'login' %}">Login</a>
+                    </li>
+
+                    <li class="nav-item">
+                        {# Usamos el nombre de URL 'report_stats' definido en reportar/urls.py #}
+                        <a class="nav-link" href="{% url 'report_stats' %}">Reporte de Seguridad</a>
+                    </li>
+                    {# --- Fin Nuevos enlaces --- #}
+
+                </ul>
+                </div>
         </nav>
 
 
         <main>
-          <div class="container" style="min-height: 580px;">
-          {% block content %}
-          {% endblock %}
-          </div>
+            <div class="container" style="min-height: 580px;">
+            {# Este bloque será llenado por las plantillas que extienden base.html #}
+            {% block content %}
+            {% endblock %}
+            </div>
         </main>
 
-    </body>
+        </body>
 
-    <!-- Footer -->
-        <footer style="background-color: #D8D8D8; position: relative; bottom: 0; width: 100%; height: 100px;">
-        </footer>
-    <!-- Footer -->
-
-</html>
+    <footer style="background-color: #D8D8D8; position: relative; bottom: 0; width: 100%; height: 100px; margin-top: 30px;">
+             </footer>
+    </html>
