@@ -5,7 +5,7 @@
 
 {% block content %}
 <div class="container">
-    <h2>Login (Simulado)</h2>
+    <h2>Login</h2>
 
     {# Mostrar mensajes de resultado #}
     {% if message %}
@@ -18,7 +18,7 @@
     <form method="post" action="{% url 'login' %}"> {# Apunta a la URL nombrada 'login' #}
         {% csrf_token %} {# Token de seguridad CSRF #}
         <div class="form-group">
-            <label for="username">Nombre de Usuario (simulado):</label>
+            <label for="username">Nombre de Usuario:</label>
             <input type="text" class="form-control" id="username" name="username" required value="{{ username_attempted|default:'' }}"> {# Mantener el valor intentado #}
         </div>
         <button type="submit" class="btn btn-primary">Login</button>
