@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'paciente',
     'infoAdmin',
     'historiaClinica',
-    'hospital'
+    'hospital', 
+    'security'
 ]
 
 MIDDLEWARE = [
