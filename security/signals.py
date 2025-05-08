@@ -2,7 +2,7 @@
 import django.dispatch
 import random
 import logging
-from .models import SuspiciousLoginAttempt # Importamos el modelo aquí
+from .models import SuspiciousLoginAttempt #modelo
 
 logger = logging.getLogger(__name__)
 
@@ -34,9 +34,4 @@ def check_suspicious_login_receiver(sender, username=None, request=None, **kwarg
             # Añadir manejo de errores si falla la escritura en DB
             logger.error(f"SIGNAL RECEIVER: ERROR al registrar intento sospechoso para '{username}': {e}")
 
-    # Opcional: loguear intentos no sospechosos también desde el receptor
-    # else:
-    #     logger.info(f"SIGNAL RECEIVER: Ingreso simulado normal (no sospechoso) para usuario: {username}")
-
-    # Los receptores de señal normalmente no retornan valores que se utilicen.
-    # Su propósito es realizar acciones secundarias (como guardar en DB, enviar email, etc.).
+    

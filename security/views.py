@@ -15,11 +15,7 @@ from .models import SuspiciousLoginAttempt # Usado para SuspiciousLoginAttempt.o
 
 logger = logging.getLogger(__name__)
 
-# NOTA: La función check_suspicious_login (con la lógica de simulación de sospecha y guardado en DB)
-# YA NO ESTÁ AQUÍ. Ahora está en security/signals.py como un receptor de señal.
 
-
-# --- Vista de Login ---
 # Maneja la visualización del formulario GET y el procesamiento de datos POST.
 # Emite la señal de intento de login y simula el resultado del login principal.
 def login_view(request):

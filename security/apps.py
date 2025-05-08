@@ -4,7 +4,7 @@ from django.apps import AppConfig
 class SecurityConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'security'
-    verbose_name = 'Seguridad' # Opcional: Nombre más amigable en el admin
+    verbose_name = 'Seguridad'
 
     def ready(self):
         """
@@ -23,5 +23,3 @@ class SecurityConfig(AppConfig):
         # conectamos sin un sender específico a menos que queramos filtrar por el emisor.
         signals.login_attempt.connect(signals.check_suspicious_login_receiver)
 
-        # Puedes añadir más conexiones aquí si tuvieras otras señales/receptores en el futuro
-        # signals.otra_senal.connect(signals.otro_receptor)
