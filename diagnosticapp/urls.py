@@ -23,7 +23,7 @@ urlpatterns = [
     #path('', views.index), por ahjora comemnte
     path('', include('login.urls')), # La nueva para este sprint
     path('report/', include('reportar.urls')), #Nueva too
-    #path('', include('paciente.urls')),
+    path('', include('paciente.urls')),
     path('health/', views.healthCheck, name='health'),
     #path('security/', include('security.urls')),
     #path('', RedirectView.as_view(url='/security/login/', permanent=False)),

@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'infoAdmin',
     'historiaClinica',
     'hospital', 
-    #'security' por si acaso lo dejo commented 
     'login',
     'heuristica',
     'reportar',
